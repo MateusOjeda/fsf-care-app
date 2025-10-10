@@ -11,13 +11,10 @@ export default function LoginScreen() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
-	console.log("Passei pela tela de login");
-
 	const handleLogin = async () => {
 		try {
 			const user = await loginUser(email, password);
 			await login(user);
-			router.replace("/tabs/admin/home");
 		} catch (error: any) {
 			console.log("Erro login:", error);
 			Alert.alert("Erro", error.message);

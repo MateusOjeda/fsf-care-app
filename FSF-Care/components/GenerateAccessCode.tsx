@@ -10,6 +10,7 @@ export default function GenerateAccessCodeScreen() {
 	const [maxUses, setMaxUses] = useState<number>(1);
 	const [expiresAt, setExpiresAt] = useState<string>(""); // formato YYYY-MM-DD
 	const [loading, setLoading] = useState(false);
+	const [durationDays, setDurationDays] = useState<number>(30);
 
 	const generateRandomCode = () => {
 		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -41,6 +42,7 @@ export default function GenerateAccessCodeScreen() {
 				usedBy: [],
 				maxUses,
 				expiresAt: expiresAt ? new Date(expiresAt) : defaultDate,
+				durationDays: durationDays || undefined,
 			};
 
 			await addDoc(collection(db, "accessCodes"), {
@@ -92,6 +94,17 @@ export default function GenerateAccessCodeScreen() {
 				placeholder="2025-12-31"
 				value={expiresAt}
 				onChangeText={setExpiresAt}
+			/>
+
+			<Text style={styles.label}>
+				Validade do usuário em dias (opcional):
+			</Text>
+			<TextInput
+				style={styles.input}
+				keyboardType="number-pad"
+				placeholder="30"
+				value={durationDays?.toString() ?? ""}
+				onChangeText={(text) => setDurationDays(Number(text))}
 			/>
 
 			<Button

@@ -30,7 +30,13 @@ export async function loginUser(
 		);
 	}
 	const data = userDoc.data(); // dados do Firestore, sem uid
-	const userData: User = { ...data, uid: userDoc.id } as User;
+	const expiresAtDate = data.expiresAt ? data.expiresAt.toDate() : undefined;
+
+	const userData: User = {
+		...data,
+		uid: userDoc.id,
+		expiresAt: expiresAtDate,
+	} as User;
 
 	if (!userData.active) {
 		throw new Error("Sua conta ainda não foi ativada.");

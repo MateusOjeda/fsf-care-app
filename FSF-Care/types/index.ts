@@ -6,6 +6,7 @@ export type User = {
 	email: string;
 	role?: UserRole;
 	active: boolean;
+	expiresAt?: Date;
 };
 
 export type AccessCode = {
@@ -14,6 +15,7 @@ export type AccessCode = {
 	usedBy: string[];
 	maxUses: number;
 	expiresAt: Date;
+	durationDays?: number;
 };
 
 export type Patient = {

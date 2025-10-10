@@ -8,12 +8,14 @@ import {
 	getDocs,
 	updateDoc,
 	doc,
+	Timestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { User, AccessCode } from "../../types";
 
+import LogoutButton from "~components/LogoutButton";
 import GenerateAccessCode from "~components/GenerateAccessCode";
 
 export default function AccessCodeScreen() {
@@ -74,14 +76,26 @@ export default function AccessCodeScreen() {
 				throw new Error("Você já usou este código");
 			}
 
+			// Calculate expire date
+			const userExpireAt = new Date();
+			userExpireAt.setDate(
+				userExpireAt.getDate() + accessData.durationDays
+			);
+
 			// Atualiza o usuário no Firestore
 			const userRef = doc(db, "users", user.uid);
 			const updatedUser: User = {
 				...user,
+				expiresAt: userExpireAt ? userExpireAt : undefined,
 				role: accessData.role,
 				active: true,
 			};
-			await updateDoc(userRef, updatedUser);
+			await updateDoc(userRef, {
+				...updatedUser,
+				expiresAt: updatedUser.expiresAt
+					? Timestamp.fromDate(updatedUser.expiresAt)
+					: undefined,
+			});
 
 			// Atualiza o array usedBy no access code
 			await updateDoc(accessDoc.ref, {
@@ -90,9 +104,6 @@ export default function AccessCodeScreen() {
 
 			// Atualiza o contexto
 			await login(updatedUser);
-
-			// Redireciona para área autenticada
-			router.replace("/tabs/admin/home");
 		} catch (error: any) {
 			console.log("Erro validando access code:", error);
 			Alert.alert("Erro", error.message);
@@ -117,6 +128,7 @@ export default function AccessCodeScreen() {
 				disabled={loading}
 			/>
 			<GenerateAccessCode />
+			<LogoutButton />
 		</View>
 	);
 }
