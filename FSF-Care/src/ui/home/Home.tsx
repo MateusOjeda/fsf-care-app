@@ -1,6 +1,6 @@
 import { View, Text, Button } from "react-native";
 import { useRouter } from "expo-router";
-import LogoutButton from "~components/LogoutButton";
+import LogoutButton from "@/src/components/LogoutButton";
 
 export default function HomeComponent() {
 	const router = useRouter();

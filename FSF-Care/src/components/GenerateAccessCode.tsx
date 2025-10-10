@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "~firebase/config";
-import { AccessCode } from "~types";
+import { db } from "@/src/firebase/config";
+import { AccessCode } from "@/src/types";
 
 export default function GenerateAccessCodeScreen() {
 	const [role, setRole] = useState<AccessCode["role"]>("geral");

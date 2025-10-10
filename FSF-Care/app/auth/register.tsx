@@ -3,10 +3,10 @@ import React, { useState, useContext } from "react";
 import { View, TextInput, Button, Alert, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../../firebase/config";
+import { auth, db } from "../../src/firebase/config";
 import { useRouter } from "expo-router";
-import { AuthContext } from "../../context/AuthContext";
-import { User } from "../../types";
+import { AuthContext } from "../../src/context/AuthContext";
+import { User } from "../../src/types";
 
 export default function RegisterScreen() {
 	const [email, setEmail] = useState("");

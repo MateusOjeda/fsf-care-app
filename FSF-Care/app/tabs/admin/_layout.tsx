@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import RoleGuard from "~components/RoleGuard";
+import RoleGuard from "@/src/components/RoleGuard";
 
 export default function TabsLayout() {
 	return (

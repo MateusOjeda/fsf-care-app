@@ -1,7 +1,7 @@
 import { Slot, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { AuthProvider, AuthContext } from "../context/AuthContext";
-import LogRouteExpo from "@/components/LogRouteExpo";
+import { AuthProvider, AuthContext } from "../src/context/AuthContext";
+import LogRouteExpo from "@/src/components/LogRouteExpo";
 
 function RootStack() {
 	const [mounted, setMounted] = useState(false);
@@ -32,15 +32,15 @@ function RootStack() {
 				case "admin":
 					router.replace("/tabs/admin/home");
 					break;
-				case "medico":
-					router.replace("/tabs/medico/home");
-					break;
-				case "psicossocial":
-					router.replace("/tabs/psicossocial/home");
-					break;
-				case "geral":
-					router.replace("/tabs/geral/home");
-					break;
+				// case "medico":
+				// 	router.replace("/tabs/medico/home");
+				// 	break;
+				// case "psicossocial":
+				// 	router.replace("/tabs/psicossocial/home");
+				// 	break;
+				// case "geral":
+				// 	router.replace("/tabs/geral/home");
+				// 	break;
 				default:
 					router.replace("/auth/access-code");
 			}

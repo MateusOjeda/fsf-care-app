@@ -10,13 +10,13 @@ import {
 	doc,
 	Timestamp,
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
-import { AuthContext } from "../../context/AuthContext";
+import { db } from "../../src/firebase/config";
+import { AuthContext } from "../../src/context/AuthContext";
 import { useRouter } from "expo-router";
-import { User, AccessCode } from "../../types";
+import { User, AccessCode } from "../../src/types";
 
-import LogoutButton from "~components/LogoutButton";
-import GenerateAccessCode from "~components/GenerateAccessCode";
+import LogoutButton from "@/src/components/LogoutButton";
+import GenerateAccessCode from "@/src/components/GenerateAccessCode";
 
 export default function AccessCodeScreen() {
 	const [code, setCode] = useState("");

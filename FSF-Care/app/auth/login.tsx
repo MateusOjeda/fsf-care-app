@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { loginUser } from "~firebase/auth-firebase";
+import { AuthContext } from "../../src/context/AuthContext";
+import { loginUser } from "@/src/firebase/auth-firebase";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
@@ -41,7 +41,7 @@ export default function LoginScreen() {
 			<Button title="Login" onPress={handleLogin} />
 			<Button
 				title="Register"
-				onPress={() => router.replace("/auth/register-screen")}
+				onPress={() => router.replace("/auth/register")}
 			/>
 		</View>
 	);
