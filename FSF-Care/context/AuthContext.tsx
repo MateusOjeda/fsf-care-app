@@ -5,7 +5,7 @@ import { User } from "../types";
 type AuthContextType = {
 	user: User | null;
 	loading: boolean;
-	login: (email: string, password: string) => Promise<void>;
+	login: (user: User) => Promise<void>;
 	logout: () => void;
 };
 
@@ -20,53 +20,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<User | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	const mockUserOptions = (email: string) => {
-		switch (email) {
-			case "admin":
-				return {
-					id: "124",
-					name: "Admin FSF",
-					role: "admin",
-					active: true,
-				} as User;
-			case "medico":
-				return {
-					id: "125",
-					name: "Medico FSF",
-					role: "medico",
-					active: true,
-				} as User;
-			case "psicossocial":
-				return {
-					id: "126",
-					name: "Psicossocial FSF",
-					role: "psicossocial",
-					active: true,
-				} as User;
-			case "geral":
-				return {
-					id: "127",
-					name: "Geral FSF",
-					role: "geral",
-					active: true,
-				} as User;
-			default:
-				return {
-					id: "123",
-					name: "Sem Perfil",
-					role: "no_profile",
-					active: true,
-				} as User;
-		}
-	};
-
-	const login = async (email: string, password: string) => {
-		// Mock login: substituir pela chamada real ao Firebase Auth
-		const mockUser = mockUserOptions(email);
-
-		setUser(mockUser);
-		await AsyncStorage.setItem("user", JSON.stringify(mockUser));
-		console.log("Login feito: ", mockUser);
+	const login = async (user: User) => {
+		setUser(user);
+		await AsyncStorage.setItem("user", JSON.stringify(user));
+		console.log("Login feito: ", user);
 	};
 
 	const logout = async () => {

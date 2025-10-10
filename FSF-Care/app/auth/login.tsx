@@ -1,6 +1,7 @@
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { loginUser } from "~firebase/auth-firebase";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
@@ -13,7 +14,14 @@ export default function LoginScreen() {
 	console.log("Passei pela tela de login");
 
 	const handleLogin = async () => {
-		await login(email, password);
+		try {
+			const user = await loginUser(email, password);
+			await login(user);
+			router.replace("/tabs/admin/home");
+		} catch (error: any) {
+			console.log("Erro login:", error);
+			Alert.alert("Erro", error.message);
+		}
 	};
 
 	return (
@@ -34,6 +42,10 @@ export default function LoginScreen() {
 				secureTextEntry
 			/>
 			<Button title="Login" onPress={handleLogin} />
+			<Button
+				title="Register"
+				onPress={() => router.replace("/auth/register-screen")}
+			/>
 		</View>
 	);
 }

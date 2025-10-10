@@ -44,3 +44,5 @@ app-example
 
 # Expo basic example
 /app-example
+
+.env

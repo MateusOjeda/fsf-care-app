@@ -4,7 +4,10 @@
 		"strict": true,
 		"paths": {
 			"@/*": ["./*"],
-			"~components/*": ["components/*"]
+			"~components/*": ["components/*"],
+			"~firebase/*": ["firebase/*"],
+			"~types/*": ["types/*"],
+			"~types*": ["types/index"]
 		},
 		"baseUrl": "."
 	},

@@ -12,6 +12,8 @@ function RootStack() {
 
 		if (!user) {
 			router.replace("/auth/login");
+		} else if (!user.active) {
+			router.replace("/auth/access-code");
 		} else {
 			switch (user.role) {
 				case "admin":
@@ -26,12 +28,8 @@ function RootStack() {
 				case "geral":
 					router.replace("/tabs/geral/home");
 					break;
-				case "no_profile":
-					router.replace("/no_profile");
-					break;
 				default:
-					logout();
-					router.replace("/auth/login");
+					router.replace("/auth/access-code");
 			}
 		}
 	}, [user, loading]);
