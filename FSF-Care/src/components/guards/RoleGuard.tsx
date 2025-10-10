@@ -1,7 +1,7 @@
 import { ReactNode, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { View, Text } from "react-native";
-import { UserRole } from "../types";
+import { UserRole } from "../../types";
 
 type RoleGuardProps = {
 	allowedRoles: UserRole[];

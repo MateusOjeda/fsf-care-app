@@ -8,9 +8,11 @@ import { AccessCode } from "@/src/types";
 export default function GenerateAccessCodeScreen() {
 	const [role, setRole] = useState<AccessCode["role"]>("geral");
 	const [maxUses, setMaxUses] = useState<number>(1);
-	const [expiresAt, setExpiresAt] = useState<string>(""); // formato YYYY-MM-DD
+	const [codeExpiresAt, setCodeExpiresAt] = useState<number | undefined>(1);
 	const [loading, setLoading] = useState(false);
-	const [durationDays, setDurationDays] = useState<number>(30);
+	const [durationDays, setDurationDays] = useState<number | undefined>(
+		undefined
+	);
 
 	const generateRandomCode = () => {
 		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -32,30 +34,29 @@ export default function GenerateAccessCodeScreen() {
 		try {
 			const code = generateRandomCode();
 
-			// Data padrão +2 dias
-			const defaultDate = new Date();
-			defaultDate.setDate(defaultDate.getDate() + 1);
+			const codeExpireDate = new Date();
+			codeExpireDate.setDate(
+				codeExpireDate.getDate() + (codeExpiresAt ? codeExpiresAt : 1)
+			);
 
 			const newAccessCode: AccessCode = {
 				code,
 				role,
 				usedBy: [],
 				maxUses,
-				expiresAt: expiresAt ? new Date(expiresAt) : defaultDate,
-				durationDays: durationDays || undefined,
+				expiresAt: codeExpireDate,
+				...(durationDays ? { durationDays } : {}),
 			};
 
-			await addDoc(collection(db, "accessCodes"), {
-				...newAccessCode,
-				expiresAt: Timestamp.fromDate(newAccessCode.expiresAt),
-			});
+			await addDoc(collection(db, "accessCodes"), newAccessCode);
 
 			Alert.alert("Sucesso", `Código gerado: ${code}`);
 
 			// Limpar inputs
 			setRole("geral");
 			setMaxUses(1);
-			setExpiresAt("");
+			setCodeExpiresAt(1);
+			setDurationDays(undefined);
 		} catch (error: any) {
 			console.log("Erro gerando access code:", error);
 			Alert.alert("Erro", error.message);
@@ -87,24 +88,30 @@ export default function GenerateAccessCodeScreen() {
 			/>
 
 			<Text style={styles.label}>
-				Data de expiração (YYYY-MM-DD, opcional):
-			</Text>
-			<TextInput
-				style={styles.input}
-				placeholder="2025-12-31"
-				value={expiresAt}
-				onChangeText={setExpiresAt}
-			/>
-
-			<Text style={styles.label}>
-				Validade do usuário em dias (opcional):
+				Data de expiração do código em dias (1, 5, 7, por exemplo):
 			</Text>
 			<TextInput
 				style={styles.input}
 				keyboardType="number-pad"
-				placeholder="30"
+				value={codeExpiresAt?.toString() ?? ""}
+				onChangeText={(text) => {
+					const value = parseInt(text, 10);
+					setCodeExpiresAt(isNaN(value) ? undefined : value);
+				}}
+			/>
+
+			<Text style={styles.label}>
+				Validade do usuário em dias (30, 90 por exemplo) (opcional):
+			</Text>
+			<TextInput
+				style={styles.input}
+				keyboardType="number-pad"
+				placeholder="indefinido"
 				value={durationDays?.toString() ?? ""}
-				onChangeText={(text) => setDurationDays(Number(text))}
+				onChangeText={(text) => {
+					const value = parseInt(text, 10);
+					setDurationDays(isNaN(value) ? undefined : value);
+				}}
 			/>
 
 			<Button

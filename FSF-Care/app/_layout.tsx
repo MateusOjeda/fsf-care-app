@@ -1,7 +1,7 @@
 import { Slot, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { AuthProvider, AuthContext } from "../src/context/AuthContext";
-import LogRouteExpo from "@/src/components/LogRouteExpo";
+import LogRouteExpo from "@/src/utils/LogRouteExpo";
 
 function RootStack() {
 	const [mounted, setMounted] = useState(false);

@@ -1,27 +1,17 @@
 // src/screens/AccessCodeScreen.tsx
 import React, { useState, useContext } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native";
-import {
-	collection,
-	query,
-	where,
-	getDocs,
-	updateDoc,
-	doc,
-	Timestamp,
-} from "firebase/firestore";
-import { db } from "../../src/firebase/config";
-import { AuthContext } from "../../src/context/AuthContext";
+import { AuthContext } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
-import { User, AccessCode } from "../../src/types";
 
 import LogoutButton from "@/src/components/LogoutButton";
 import GenerateAccessCode from "@/src/components/GenerateAccessCode";
+import { useAccessCode } from "@/src/hooks/useAccessCode";
 
 export default function AccessCodeScreen() {
 	const [code, setCode] = useState("");
-	const [loading, setLoading] = useState(false);
-	const { user, login } = useContext(AuthContext);
+	const { user } = useContext(AuthContext);
+	const { validateAccessCode, loading } = useAccessCode();
 	const router = useRouter();
 
 	if (!user) {
@@ -32,84 +22,8 @@ export default function AccessCodeScreen() {
 		);
 	}
 
-	const handleValidateCode = async () => {
-		if (!code) {
-			Alert.alert("Erro", "Digite o código de acesso");
-			return;
-		}
-
-		setLoading(true);
-
-		try {
-			// Busca o access code no Firestore
-			const q = query(
-				collection(db, "accessCodes"),
-				where("code", "==", code)
-			);
-			const snapshot = await getDocs(q);
-
-			if (snapshot.empty) {
-				throw new Error("Código inválido");
-			}
-
-			const accessDoc = snapshot.docs[0];
-			const accessData = accessDoc.data();
-
-			// Valida data de expiração
-			if (
-				accessData.expiresAt &&
-				accessData.expiresAt.toDate() < new Date()
-			) {
-				throw new Error("Este código expirou");
-			}
-
-			// Valida maxUses
-			if (
-				accessData.maxUses &&
-				accessData.usedBy.length >= accessData.maxUses
-			) {
-				throw new Error("Código atingiu o limite de usos");
-			}
-
-			// Valida se já foi usado pelo usuário
-			if (accessData.usedBy.includes(user.uid)) {
-				throw new Error("Você já usou este código");
-			}
-
-			// Calculate expire date
-			const userExpireAt = new Date();
-			userExpireAt.setDate(
-				userExpireAt.getDate() + accessData.durationDays
-			);
-
-			// Atualiza o usuário no Firestore
-			const userRef = doc(db, "users", user.uid);
-			const updatedUser: User = {
-				...user,
-				expiresAt: userExpireAt ? userExpireAt : undefined,
-				role: accessData.role,
-				active: true,
-			};
-			await updateDoc(userRef, {
-				...updatedUser,
-				expiresAt: updatedUser.expiresAt
-					? Timestamp.fromDate(updatedUser.expiresAt)
-					: undefined,
-			});
-
-			// Atualiza o array usedBy no access code
-			await updateDoc(accessDoc.ref, {
-				usedBy: [...accessData.usedBy, user.uid],
-			});
-
-			// Atualiza o contexto
-			await login(updatedUser);
-		} catch (error: any) {
-			console.log("Erro validando access code:", error);
-			Alert.alert("Erro", error.message);
-		} finally {
-			setLoading(false);
-		}
+	const handleValidate = async () => {
+		const success = await validateAccessCode(code);
 	};
 
 	return (
@@ -124,7 +38,7 @@ export default function AccessCodeScreen() {
 			/>
 			<Button
 				title={loading ? "Validando..." : "Validar"}
-				onPress={handleValidateCode}
+				onPress={handleValidate}
 				disabled={loading}
 			/>
 			<GenerateAccessCode />

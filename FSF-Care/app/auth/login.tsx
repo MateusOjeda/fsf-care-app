@@ -1,24 +1,17 @@
-import { View, Text, TextInput, Button, Alert } from "react-native";
-import { useContext, useState } from "react";
-import { AuthContext } from "../../src/context/AuthContext";
-import { loginUser } from "@/src/firebase/auth-firebase";
+import { View, Text, TextInput, Button } from "react-native";
+import { useState } from "react";
+import { useAuth } from "@/src/hooks/useAuth";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
-	const { login } = useContext(AuthContext);
+	const { login } = useAuth();
 	const router = useRouter();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
-	const handleLogin = async () => {
-		try {
-			const user = await loginUser(email, password);
-			await login(user);
-		} catch (error: any) {
-			console.log("Erro login:", error);
-			Alert.alert("Erro", error.message);
-		}
+	const handleSubmit = async () => {
+		const success = await login(email, password);
 	};
 
 	return (
@@ -38,7 +31,7 @@ export default function LoginScreen() {
 				onChangeText={setPassword}
 				secureTextEntry
 			/>
-			<Button title="Login" onPress={handleLogin} />
+			<Button title="Login" onPress={handleSubmit} />
 			<Button
 				title="Register"
 				onPress={() => router.replace("/auth/register")}
