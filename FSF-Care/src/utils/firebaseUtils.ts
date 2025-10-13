@@ -1,0 +1,53 @@
+import { Timestamp } from "firebase/firestore";
+
+export function convertTimestampsToDates<T extends Record<string, any>>(
+	obj: T
+): T {
+	const result: any = {};
+
+	for (const [key, value] of Object.entries(obj)) {
+		if (value instanceof Timestamp) {
+			result[key] = value.toDate();
+		} else if (
+			value &&
+			typeof value === "object" &&
+			!Array.isArray(value)
+		) {
+			result[key] = convertTimestampsToDates(value);
+		} else {
+			result[key] = value;
+		}
+	}
+
+	return result;
+}
+
+export function convertDatesToTimestamps<T extends Record<string, any>>(
+	obj: T
+): T {
+	const result: any = {};
+
+	for (const [key, value] of Object.entries(obj)) {
+		if (value instanceof Date) {
+			result[key] = Timestamp.fromDate(value);
+		} else if (
+			value &&
+			typeof value === "object" &&
+			!Array.isArray(value)
+		) {
+			result[key] = convertDatesToTimestamps(value); // recursive for nested objects
+		} else {
+			result[key] = value;
+		}
+	}
+
+	return result;
+}
+
+export function removeUndefined<T extends Record<string, any>>(
+	obj: T
+): Partial<T> {
+	return Object.fromEntries(
+		Object.entries(obj).filter(([, v]) => v !== undefined)
+	) as Partial<T>;
+}

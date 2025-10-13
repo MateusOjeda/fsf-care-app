@@ -3,6 +3,7 @@ import React, { useState, useContext } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native";
 import { AuthContext } from "@/src/context/AuthContext";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import LogoutButton from "@/src/components/LogoutButton";
 import GenerateAccessCode from "@/src/components/GenerateAccessCode";
@@ -27,7 +28,7 @@ export default function AccessCodeScreen() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
 			<Text style={styles.label}>Digite seu código de acesso</Text>
 			<TextInput
 				style={styles.input}
@@ -43,7 +44,7 @@ export default function AccessCodeScreen() {
 			/>
 			<GenerateAccessCode />
 			<LogoutButton />
-		</View>
+		</SafeAreaView>
 	);
 }
 

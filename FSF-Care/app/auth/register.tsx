@@ -1,12 +1,9 @@
-// src/screens/RegisterScreen.tsx
 import React, { useState, useContext } from "react";
-import { View, TextInput, Button, Alert, StyleSheet } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../../src/firebase/config";
+import { TextInput, Button, Alert, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { AuthContext } from "../../src/context/AuthContext";
-import { User } from "../../src/types";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { registerUser } from "@/src/firebase/auth";
 
 export default function RegisterScreen() {
 	const [email, setEmail] = useState("");
@@ -21,40 +18,23 @@ export default function RegisterScreen() {
 		}
 
 		try {
-			// Cria usuário no Firebase Auth
-			const userCredential = await createUserWithEmailAndPassword(
-				auth,
-				email,
-				password
-			);
-			const uid = userCredential.user.uid;
-
-			const newUser: User = {
-				uid,
-				email,
-				active: false, // só vai ativar após usar access code
-			};
-			await setDoc(doc(db, "users", uid), newUser);
-
-			// Salva no AuthContext
+			const newUser = await registerUser(email, password);
 			await login(newUser);
-
 			router.push("/auth/access-code");
 		} catch (error: any) {
 			let message = error.message;
-			if (error.code === "auth/email-already-in-use") {
+			if (error.code === "auth/email-already-in-use")
 				message = "Este e-mail já está em uso";
-			} else if (error.code === "auth/invalid-email") {
+			else if (error.code === "auth/invalid-email")
 				message = "E-mail inválido";
-			} else if (error.code === "auth/weak-password") {
+			else if (error.code === "auth/weak-password")
 				message = "Senha muito fraca";
-			}
 			Alert.alert("Erro no registro", message);
 		}
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
 			<TextInput
 				style={styles.input}
 				placeholder="E-mail"
@@ -71,7 +51,7 @@ export default function RegisterScreen() {
 				onChangeText={setPassword}
 			/>
 			<Button title="Registrar" onPress={handleRegister} />
-		</View>
+		</SafeAreaView>
 	);
 }
 

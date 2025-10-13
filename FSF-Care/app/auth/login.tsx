@@ -1,7 +1,8 @@
-import { View, Text, TextInput, Button } from "react-native";
+import { Text, TextInput, Button } from "react-native";
 import { useState } from "react";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
 	const { login } = useAuth();
@@ -15,7 +16,7 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<View
+		<SafeAreaView
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
 			<Text>Email</Text>
@@ -36,6 +37,6 @@ export default function LoginScreen() {
 				title="Register"
 				onPress={() => router.replace("/auth/register")}
 			/>
-		</View>
+		</SafeAreaView>
 	);
 }

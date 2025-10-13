@@ -1,68 +1,43 @@
+// src/screens/GenerateAccessCodeScreen.tsx
 import React, { useState } from "react";
-import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native";
+import { View, TextInput, Button, StyleSheet, Text } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "@/src/firebase/config";
-import { AccessCode } from "@/src/types";
+import { useAccessCode } from "@/src/hooks/useAccessCode";
+import { UserRole } from "@/src/types";
 
 export default function GenerateAccessCodeScreen() {
-	const [role, setRole] = useState<AccessCode["role"]>("geral");
-	const [maxUses, setMaxUses] = useState<number>(1);
+	const [role, setRole] = useState<UserRole>("geral");
+	const [maxUses, setMaxUses] = useState(1);
 	const [codeExpiresAt, setCodeExpiresAt] = useState<number | undefined>(1);
-	const [loading, setLoading] = useState(false);
 	const [durationDays, setDurationDays] = useState<number | undefined>(
 		undefined
 	);
 
-	const generateRandomCode = () => {
-		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		let code = "";
-		for (let i = 0; i < 6; i++) {
-			code += chars.charAt(Math.floor(Math.random() * chars.length));
+	const { generateAccessCode, loading } = useAccessCode();
+
+	const handleRoleChange = (value: string) => {
+		if (["geral", "psicossocial", "medico", "admin"].includes(value)) {
+			setRole(value as UserRole);
 		}
-		return code;
 	};
 
-	const handleGenerateCode = async () => {
-		if (maxUses <= 0) {
-			Alert.alert("Erro", "O número máximo de usos deve ser maior que 0");
-			return;
-		}
+	const handleGenerateCode = () => {
+		const expiresAt = new Date();
+		expiresAt.setDate(expiresAt.getDate() + (codeExpiresAt ?? 0));
 
-		setLoading(true);
+		generateAccessCode({
+			role,
+			maxUses,
+			expiresAt,
+			durationDays,
+			usedBy: [],
+		});
 
-		try {
-			const code = generateRandomCode();
-
-			const codeExpireDate = new Date();
-			codeExpireDate.setDate(
-				codeExpireDate.getDate() + (codeExpiresAt ? codeExpiresAt : 1)
-			);
-
-			const newAccessCode: AccessCode = {
-				code,
-				role,
-				usedBy: [],
-				maxUses,
-				expiresAt: codeExpireDate,
-				...(durationDays ? { durationDays } : {}),
-			};
-
-			await addDoc(collection(db, "accessCodes"), newAccessCode);
-
-			Alert.alert("Sucesso", `Código gerado: ${code}`);
-
-			// Limpar inputs
-			setRole("geral");
-			setMaxUses(1);
-			setCodeExpiresAt(1);
-			setDurationDays(undefined);
-		} catch (error: any) {
-			console.log("Erro gerando access code:", error);
-			Alert.alert("Erro", error.message);
-		} finally {
-			setLoading(false);
-		}
+		// Limpar inputs
+		setRole("geral");
+		setMaxUses(1);
+		setCodeExpiresAt(1);
+		setDurationDays(undefined);
 	};
 
 	return (
@@ -70,7 +45,7 @@ export default function GenerateAccessCodeScreen() {
 			<Text style={styles.label}>Role do usuário:</Text>
 			<Picker
 				selectedValue={role}
-				onValueChange={(value) => setRole(value)}
+				onValueChange={handleRoleChange}
 				style={styles.picker}
 			>
 				<Picker.Item label="Geral" value="geral" />
