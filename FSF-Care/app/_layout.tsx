@@ -30,16 +30,16 @@ function RootStack() {
 		} else {
 			switch (user.role) {
 				case "admin":
-					router.replace("/tabs/admin/home");
+					router.replace("/admin/home");
 					break;
 				// case "medico":
-				// 	router.replace("/tabs/medico/home");
+				// 	router.replace("/medico/home");
 				// 	break;
 				// case "psicossocial":
-				// 	router.replace("/tabs/psicossocial/home");
+				// 	router.replace("/psicossocial/home");
 				// 	break;
 				// case "geral":
-				// 	router.replace("/tabs/geral/home");
+				// 	router.replace("/geral/home");
 				// 	break;
 				default:
 					router.replace("/auth/access-code");

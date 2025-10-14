@@ -30,11 +30,13 @@ export interface AccessCode {
 }
 
 export interface Patient {
-	id: string;
+	id?: string;
+	createdBy: string;
 	name: string;
-	identityNumber: string;
-	psychosocialLimited: any[];
-	psychosocialAdvanced: any[];
-	medicalRecords: any[];
-	historyEdits: { userId: string; timestamp: number; changes: string }[];
+	birthDate?: Date;
+	documentId?: string;
+	phone?: string;
+	address?: string;
+	notes?: string;
+	createdAt?: Date;
 }

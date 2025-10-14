@@ -2,6 +2,7 @@ import {
 	addDoc,
 	setDoc,
 	getDoc,
+	deleteDoc,
 	doc,
 	updateDoc,
 	CollectionReference,
@@ -27,7 +28,9 @@ export async function addDocSafe(
 	const payload = removeUndefined(convertDatesToTimestamps(data));
 
 	if (id) {
-		return setDoc(doc(collectionRef, id), payload);
+		const docRef = doc(collectionRef, id);
+		await setDoc(docRef, payload);
+		return docRef; // retorna manualmente o docRef
 	} else {
 		return addDoc(collectionRef, payload);
 	}
@@ -39,6 +42,15 @@ export async function updateDocSafe(
 ) {
 	const payload = removeUndefined(convertDatesToTimestamps(data));
 	return updateDoc(docRef, payload);
+}
+
+export async function deleteDocSafe(docRef: DocumentReference) {
+	try {
+		await deleteDoc(docRef);
+	} catch (err) {
+		console.error("Erro ao deletar documento:", err);
+		throw err;
+	}
 }
 
 export type DocumentWithId<T> = {
