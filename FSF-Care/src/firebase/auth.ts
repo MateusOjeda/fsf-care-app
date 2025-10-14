@@ -1,15 +1,15 @@
-import { auth, db } from "./config";
 import { collection, where } from "firebase/firestore";
 import { User } from "../types";
-import {
-	fetchDocumentsWithId,
-	DocumentWithId,
-} from "@/src/firebase/fetchWithId";
 import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 } from "firebase/auth";
-import { addDocSafe } from "@/src/firebase/firebaseSafe";
+import { auth, db } from "@/src/firebase/_config";
+import {
+	addDocSafe,
+	fetchDocumentsWithIdSafe,
+	DocumentWithId,
+} from "@/src/firebase/_firebaseSafe";
 
 // Login with email/password
 export async function loginUser(
@@ -25,10 +25,10 @@ export async function loginUser(
 	const uid = userCredential.user.uid;
 
 	// Fetch the user document using your utility
-	const results: DocumentWithId<User>[] = await fetchDocumentsWithId<User>(
-		collection(db, "users"),
-		[where("uid", "==", uid)]
-	);
+	const results: DocumentWithId<User>[] =
+		await fetchDocumentsWithIdSafe<User>(collection(db, "users"), [
+			where("uid", "==", uid),
+		]);
 
 	const userDoc = results[0];
 	if (!userDoc) {

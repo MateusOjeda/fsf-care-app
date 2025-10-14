@@ -1,16 +1,18 @@
-import { db } from "./config";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, DocumentReference } from "firebase/firestore";
 import { UserProfile, User } from "../types";
-import { convertTimestampsToDates } from "../utils/firebaseUtils";
+import { db } from "@/src/firebase/_config";
+import { updateDocSafe, getDocSafe } from "@/src/firebase/_firebaseSafe";
 
 export async function updateUserProfile(
 	uid: string,
 	profile: UserProfile
-): Promise<User> {
+): Promise<void> {
 	const userRef = doc(db, "users", uid);
-	await updateDoc(userRef, { profile });
+	await updateDocSafe(userRef, { profile });
+}
 
-	const updatedDoc = await getDoc(userRef);
-	const data = convertTimestampsToDates(updatedDoc.data()!);
-	return { ...data, uid: updatedDoc.id } as User;
+export async function getUserData(uid: string): Promise<User | null> {
+	const userRef = doc(db, "users", uid) as DocumentReference<User>;
+	const userData = await getDocSafe<User>(userRef);
+	return userData;
 }

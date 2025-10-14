@@ -1,12 +1,12 @@
 import React, { useContext, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { AuthContext } from "@/src/context/AuthContext";
-import { updateUserProfile } from "@/src/firebase/userService";
+import { updateUserProfile, getUserData } from "@/src/firebase/userService";
 import { UserProfileIdType } from "@/src/types";
 import { Picker } from "@react-native-picker/picker";
 
 export default function ProfileScreen() {
-	const { user, setUser } = useContext(AuthContext);
+	const { user, login } = useContext(AuthContext);
 
 	const [name, setName] = useState(user?.profile?.name || "");
 	const [birthDate, setBirthDate] = useState(
@@ -24,14 +24,19 @@ export default function ProfileScreen() {
 		if (!user) return;
 
 		try {
-			const updatedUser = await updateUserProfile(user.uid, {
+			await updateUserProfile(user.uid, {
 				name,
 				birthDate: birthDate ? new Date(birthDate) : undefined,
 				documentIdType,
 				documentId,
 				crm,
 			});
-			setUser(updatedUser);
+			const updatedUser = await getUserData(user.uid);
+			if (!updatedUser) {
+				Alert.alert("Erro", "Usuário não encontrado após atualização.");
+				return;
+			}
+			await login(updatedUser);
 			Alert.alert("Sucesso", "Perfil atualizado!");
 		} catch (err) {
 			Alert.alert("Erro", "Não foi possível atualizar o perfil.");

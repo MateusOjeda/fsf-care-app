@@ -1,11 +1,12 @@
-import { db } from "./config";
+import { db } from "@/src/firebase/_config";
+import {
+	addDocSafe,
+	updateDocSafe,
+	fetchDocumentsWithIdSafe,
+	DocumentWithId,
+} from "@/src/firebase/_firebaseSafe";
 import { collection, doc, where } from "firebase/firestore";
 import { AccessCode, User } from "@/src/types";
-import {
-	fetchDocumentsWithId,
-	DocumentWithId,
-} from "@/src/firebase/fetchWithId";
-import { addDocSafe, updateDocSafe } from "@/src/firebase/firebaseSafe";
 
 export type AccessCodeWithId = {
 	id: string;
@@ -15,7 +16,7 @@ export type AccessCodeWithId = {
 export async function fetchAccessCode(
 	code: string
 ): Promise<DocumentWithId<AccessCode> | null> {
-	const results = await fetchDocumentsWithId<AccessCode>(
+	const results = await fetchDocumentsWithIdSafe<AccessCode>(
 		collection(db, "accessCodes"),
 		[where("code", "==", code)]
 	);
