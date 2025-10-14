@@ -36,8 +36,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const loadUser = async () => {
 			try {
 				const stored = await AsyncStorage.getItem("user");
-				if (stored) setUser(JSON.parse(stored));
-				if (stored) console.log("Login stored: ", stored);
+				if (stored) {
+					const parsed = JSON.parse(stored);
+					if (
+						parsed.expiresAt &&
+						typeof parsed.expiresAt === "string"
+					) {
+						parsed.expiresAt = new Date(parsed.expiresAt);
+					}
+					setUser(parsed);
+					console.log("Login stored: ", parsed);
+				}
 			} catch (err) {
 				console.log("Erro ao carregar usuário:", err);
 			} finally {

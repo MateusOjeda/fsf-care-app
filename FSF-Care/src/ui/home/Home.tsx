@@ -15,6 +15,16 @@ export default function HomeComponent() {
 			<Text>Bem-vindo {user?.profile?.name || ""}!</Text>
 			<Text>Seu e-mail: {user?.email}</Text>
 			<Text>Função: {user?.role}</Text>
+			{user?.expiresAt instanceof Date && (
+				<Text>
+					Conta expira em:{" "}
+					{user?.expiresAt.toLocaleDateString("pt-BR", {
+						day: "numeric",
+						month: "long",
+						year: "numeric",
+					})}
+				</Text>
+			)}
 			<Button
 				title="Editar perfil"
 				onPress={() => router.push("/profile")}
