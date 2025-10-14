@@ -1,7 +1,7 @@
 import { ReactNode, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "@/src/context/AuthContext";
 import { View, Text } from "react-native";
-import { UserRole } from "../../types";
+import { UserRole } from "@/src/types";
 
 type RoleGuardProps = {
 	allowedRoles: UserRole[];
@@ -25,7 +25,7 @@ export default function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
 		);
 	}
 
-	if (!allowedRoles.includes(user.role)) {
+	if (!user.role || !allowedRoles.includes(user.role)) {
 		return (
 			<View
 				style={{

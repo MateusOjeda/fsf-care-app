@@ -1,18 +1,24 @@
 import { View, Text, Button } from "react-native";
 import { useRouter } from "expo-router";
 import LogoutButton from "@/src/components/LogoutButton";
+import { AuthContext } from "@/src/context/AuthContext";
+import { useContext } from "react";
 
 export default function HomeComponent() {
 	const router = useRouter();
+	const { user } = useContext(AuthContext);
 
 	return (
 		<View
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
-			{/* <Button
-				title="Abrir paciente 123"
-				onPress={() => router.push("/patients/123")}
-			/> */}
+			<Text>Bem-vindo {user?.profile?.name || ""}!</Text>
+			<Text>Seu e-mail: {user?.email}</Text>
+			<Text>Função: {user?.role}</Text>
+			<Button
+				title="Editar perfil"
+				onPress={() => router.push("/profile")}
+			/>
 			<LogoutButton />
 		</View>
 	);
