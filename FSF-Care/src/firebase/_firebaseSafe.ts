@@ -82,3 +82,16 @@ export async function getDocSafe<T>(
 
 	return data;
 }
+
+export async function getDocSafeWithId<T>(
+	docRef: DocumentReference<T>
+): Promise<(T & { id: string }) | null> {
+	const docSnap = await getDoc(docRef);
+	if (!docSnap.exists()) return null;
+
+	const rawData = docSnap.data() as Record<string, any>;
+	const data = convertTimestampsToDates(rawData) as T;
+
+	// Retorna o objeto com o id do documento incluído
+	return { id: docSnap.id, ...data } as T & { id: string };
+}

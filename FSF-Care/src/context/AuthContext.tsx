@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types";
+import { parseUserFromStorage } from "@/src/utils/firebaseUtils";
 
 type AuthContextType = {
 	user: User | null;
@@ -37,15 +38,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			try {
 				const stored = await AsyncStorage.getItem("user");
 				if (stored) {
-					const parsed = JSON.parse(stored);
-					if (
-						parsed.expiresAt &&
-						typeof parsed.expiresAt === "string"
-					) {
-						parsed.expiresAt = new Date(parsed.expiresAt);
-					}
-					setUser(parsed);
-					console.log("Login stored: ", parsed);
+					const userObj = parseUserFromStorage(stored);
+					setUser(userObj);
+					console.log("Login stored: ", userObj);
 				}
 			} catch (err) {
 				console.log("Erro ao carregar usuário:", err);

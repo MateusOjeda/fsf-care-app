@@ -11,7 +11,7 @@ import {
 	addDocSafe,
 	deleteDocSafe,
 	updateDocSafe,
-	getDocSafe,
+	getDocSafeWithId,
 	fetchDocumentsWithIdSafe,
 	DocumentWithId,
 } from "@/src/firebase/_firebaseSafe";
@@ -40,12 +40,17 @@ export async function updatePatient(
 	await updateDocSafe(patientRef, patient);
 }
 
+export async function updatePatientById(id: string, patient: Partial<Patient>) {
+	const patientRef = doc(db, "patients", id);
+	await updateDocSafe(patientRef, patient);
+}
+
 /**
  * Busca um paciente pelo ID
  */
 export async function getPatientById(id: string): Promise<Patient | null> {
 	const patientRef = doc(db, "patients", id) as DocumentReference<Patient>;
-	return await getDocSafe<Patient>(patientRef);
+	return await getDocSafeWithId<Patient>(patientRef);
 }
 
 /**

@@ -18,6 +18,7 @@ export interface User {
 	active: boolean;
 	expiresAt?: Date;
 	profile?: UserProfile;
+	photoURL?: string;
 }
 
 export interface AccessCode {
@@ -39,4 +40,6 @@ export interface Patient {
 	address?: string;
 	notes?: string;
 	createdAt?: Date;
+	photoURL?: string;
+	photoThumbnailURL?: string;
 }

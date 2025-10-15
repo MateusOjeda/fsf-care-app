@@ -1,163 +1,244 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+	View,
+	Text,
+	TextInput,
+	Button,
+	StyleSheet,
+	Alert,
+	Image,
+	TouchableOpacity,
+	ActivityIndicator,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Patient } from "@/src/types";
 import {
-	createPatient,
-	updatePatient,
 	getPatientById,
-	getPatientRef,
+	updatePatientById,
 } from "@/src/firebase/patientService";
-import { AuthContext } from "@/src/context/AuthContext";
-import { useLocalSearchParams } from "expo-router";
+import { uploadImageAsync } from "@/src/firebase/storageService";
 import BackHeader from "@/src/components/BackHeader";
 
-export default function PatientFormScreen({ route }: any) {
-	const router = useRouter();
+export default function PatientForm() {
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const isEdit = !!id;
-	const { user } = useContext(AuthContext);
+	const router = useRouter();
 
-	const [patient, setPatient] = useState<Partial<Patient>>({
-		name: "",
-		documentId: "",
-		phone: "",
-		address: "",
-		notes: "",
-		createdBy: user?.uid,
-	});
+	const [patient, setPatient] = useState<Patient | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
 
-	// string para controlar o TextInput de nascimento
-	const [birthDateText, setBirthDateText] = useState("");
+	// Form states
+	const [name, setName] = useState("");
+	const [birthDate, setBirthDate] = useState("");
+	const [documentId, setDocumentId] = useState("");
+	const [phone, setPhone] = useState("");
+	const [address, setAddress] = useState("");
+	const [notes, setNotes] = useState("");
+	const [photoURI, setPhotoURI] = useState<string | undefined>();
 
+	// Carregar paciente se houver id
 	useEffect(() => {
-		if (isEdit && id) {
-			getPatientById(id).then((data) => {
-				if (data) {
-					setPatient(data);
-					if (data.birthDate) {
-						setBirthDateText(
-							new Date(data.birthDate).toISOString().slice(0, 10)
-						);
-					}
-				} else {
-					Alert.alert("Erro", "Paciente não encontrado");
-					// router.replace(`/${user.role}/patients`);
-					router.replace(`/admin/patients`);
-				}
-			});
+		if (!id) {
+			setLoading(false);
+			return;
 		}
+
+		const fetchPatient = async () => {
+			try {
+				const data = await getPatientById(id);
+				if (!data) {
+					Alert.alert("Erro", "Paciente não encontrado");
+					router.back();
+					return;
+				}
+				setPatient(data);
+				setName(data.name);
+				setBirthDate(
+					data.birthDate
+						? new Date(data.birthDate).toISOString().split("T")[0]
+						: ""
+				);
+				setDocumentId(data.documentId || "");
+				setPhone(data.phone || "");
+				setAddress(data.address || "");
+				setNotes(data.notes || "");
+				setPhotoURI(data.photoURL);
+			} catch (err) {
+				console.error(err);
+				Alert.alert("Erro", "Não foi possível carregar o paciente");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchPatient();
 	}, [id]);
 
-	const handleSave = async () => {
-		if (!patient.name) {
-			Alert.alert("Erro", "O nome do paciente é obrigatório");
-			return;
-		}
-		if (!user) {
-			Alert.alert("Erro", "Usuário não autenticado");
-			return;
-		}
+	const handlePickImage = async () => {
+		const result = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: "images",
+			allowsEditing: true,
+			aspect: [1, 1],
+			quality: 0.7,
+		});
 
-		try {
-			const birthDate = birthDateText
-				? new Date(birthDateText)
-				: undefined;
-
-			const patientData: Partial<Patient> = {
-				...patient,
-				birthDate,
-				createdBy: user.uid,
-			};
-
-			const patientId =
-				isEdit && id
-					? (await updatePatient(getPatientRef(id), patientData), id)
-					: await createPatient(patientData);
-
-			Alert.alert(
-				"Sucesso",
-				`Paciente ${isEdit ? "atualizado" : "criado"}!`
-			);
-			// router.replace(`/${user.role}/patients/${id}`);
-			router.replace(`/admin/patients/${patientId}`);
-		} catch (err) {
-			console.error(err);
-			Alert.alert("Erro", "Não foi possível salvar o paciente");
+		if (!result.canceled && result.assets.length > 0) {
+			setPhotoURI(result.assets[0].uri);
 		}
 	};
+
+	const handleSave = async () => {
+		if (!patient) return;
+
+		setSaving(true);
+		try {
+			let photoURL = patient.photoURL;
+			let photoThumbnailURL = patient.photoThumbnailURL;
+
+			if (
+				photoURI &&
+				photoURI.startsWith("file://") &&
+				photoURI !== patient.photoURL
+			) {
+				// Upload da foto full-size
+				const storagePath = `patients/${patient.id}.jpg`;
+				photoURL = await uploadImageAsync(photoURI, storagePath);
+
+				// Cria e upload da thumbnail
+				const manipResult = await ImageManipulator.manipulateAsync(
+					photoURI,
+					[{ resize: { width: 150, height: 150 } }], // tamanho da thumbnail
+					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+				);
+
+				const thumbPath = `patients/${patient.id}_thumb.jpg`;
+				photoThumbnailURL = await uploadImageAsync(
+					manipResult.uri,
+					thumbPath
+				);
+			}
+
+			await updatePatientById(patient.id!, {
+				name,
+				birthDate: birthDate ? new Date(birthDate) : undefined,
+				documentId,
+				phone,
+				address,
+				notes,
+				photoURL,
+				photoThumbnailURL,
+			});
+
+			Alert.alert("Sucesso", "Paciente atualizado!");
+			router.back();
+		} catch (err) {
+			console.error(err);
+			Alert.alert("Erro", "Não foi possível atualizar o paciente");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	if (loading) {
+		return (
+			<View style={styles.center}>
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
 
 	return (
 		<SafeAreaView style={styles.container}>
 			<BackHeader
-				title={isEdit ? "Atualizar Paciente" : "Novo Paciente"}
-				onPress={() => router.replace(`/admin/patients`)}
-			/>
-			<Text style={styles.label}>Nome: (obrigatório)</Text>
-			<TextInput
-				style={styles.input}
-				value={patient.name}
-				onChangeText={(text) => setPatient({ ...patient, name: text })}
+				title="Editar Paciente"
+				onPress={() => router.replace(`/admin/patients/${id}`)}
 			/>
 
-			<Text style={styles.label}>Data de nascimento (YYYY-MM-DD):</Text>
+			<TouchableOpacity onPress={handlePickImage}>
+				<Image
+					source={
+						photoURI
+							? { uri: photoURI }
+							: require("@/assets/images/default-profile.png")
+					}
+					style={styles.photo}
+				/>
+				<Text style={{ textAlign: "center", color: "#007bff" }}>
+					Alterar foto
+				</Text>
+			</TouchableOpacity>
+
 			<TextInput
 				style={styles.input}
-				value={birthDateText}
-				onChangeText={setBirthDateText}
-				placeholder="YYYY-MM-DD"
+				placeholder="Nome"
+				value={name}
+				onChangeText={setName}
 			/>
-
-			<Text style={styles.label}>Documento:</Text>
 			<TextInput
 				style={styles.input}
-				value={patient.documentId}
-				onChangeText={(text) =>
-					setPatient({ ...patient, documentId: text })
-				}
+				placeholder="Data de nascimento (YYYY-MM-DD)"
+				value={birthDate}
+				onChangeText={setBirthDate}
 			/>
-
-			<Text style={styles.label}>Telefone:</Text>
 			<TextInput
 				style={styles.input}
-				value={patient.phone}
-				onChangeText={(text) => setPatient({ ...patient, phone: text })}
+				placeholder="Documento"
+				value={documentId}
+				onChangeText={setDocumentId}
 			/>
-
-			<Text style={styles.label}>Endereço:</Text>
 			<TextInput
 				style={styles.input}
-				value={patient.address}
-				onChangeText={(text) =>
-					setPatient({ ...patient, address: text })
-				}
+				placeholder="Telefone"
+				value={phone}
+				onChangeText={setPhone}
 			/>
-
-			<Text style={styles.label}>Observações:</Text>
+			<TextInput
+				style={styles.input}
+				placeholder="Endereço"
+				value={address}
+				onChangeText={setAddress}
+			/>
 			<TextInput
 				style={[styles.input, { height: 80 }]}
-				value={patient.notes}
-				onChangeText={(text) => setPatient({ ...patient, notes: text })}
+				placeholder="Observações"
+				value={notes}
+				onChangeText={setNotes}
 				multiline
 			/>
 
 			<Button
-				title={isEdit ? "Atualizar Paciente" : "Criar Paciente"}
+				title={saving ? "Salvando..." : "Salvar"}
 				onPress={handleSave}
+				disabled={saving}
 			/>
+			{saving && (
+				<ActivityIndicator size="large" style={{ marginTop: 10 }} />
+			)}
 		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: { flex: 1, padding: 16 },
+	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 	input: {
 		borderWidth: 1,
 		borderColor: "#ccc",
 		padding: 10,
-		marginBottom: 12,
+		marginBottom: 15,
 		borderRadius: 5,
 	},
-	label: { fontWeight: "bold", marginBottom: 4 },
+	photo: {
+		width: 120,
+		height: 120,
+		borderRadius: 60,
+		alignSelf: "center",
+		marginBottom: 8,
+		backgroundColor: "#eee",
+	},
 });

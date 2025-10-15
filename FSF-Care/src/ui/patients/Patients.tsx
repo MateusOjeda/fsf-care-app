@@ -8,6 +8,7 @@ import {
 	ActivityIndicator,
 	Button,
 	StyleSheet,
+	Image,
 } from "react-native";
 import { fetchPatients } from "@/src/firebase/patientService";
 import { Patient } from "@/src/types";
@@ -88,10 +89,22 @@ export default function PatientsScreen() {
 						}
 					>
 						<View style={styles.item}>
-							<Text style={styles.name}>{item.data.name}</Text>
-							<Text style={styles.sub}>
-								{item.data.documentId}
-							</Text>
+							<Image
+								source={
+									item.data.photoThumbnailURL
+										? { uri: item.data.photoThumbnailURL }
+										: require("@/assets/images/default-profile.png")
+								}
+								style={styles.photo}
+							/>
+							<View style={styles.info}>
+								<Text style={styles.name}>
+									{item.data.name}
+								</Text>
+								<Text style={styles.sub}>
+									{item.data.documentId}
+								</Text>
+							</View>
 						</View>
 					</TouchableOpacity>
 				)}
@@ -121,9 +134,21 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	item: {
+		flexDirection: "row",
+		alignItems: "center",
 		padding: 12,
 		borderBottomWidth: 1,
 		borderColor: "#eee",
+	},
+	photo: {
+		width: 50,
+		height: 50,
+		borderRadius: 25,
+		backgroundColor: "#eee",
+	},
+	info: {
+		marginLeft: 12,
+		flex: 1,
 	},
 	name: { fontWeight: "bold", fontSize: 16 },
 	sub: { color: "#555" },

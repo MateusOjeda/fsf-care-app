@@ -51,3 +51,22 @@ export function removeUndefined<T extends Record<string, any>>(
 		Object.entries(obj).filter(([, v]) => v !== undefined)
 	) as Partial<T>;
 }
+
+export function parseUserFromStorage(stored: string) {
+	const parsed = JSON.parse(stored);
+
+	// expiresAt
+	if (parsed.expiresAt && typeof parsed.expiresAt === "string") {
+		parsed.expiresAt = new Date(parsed.expiresAt);
+	}
+
+	// profile.birthDate
+	if (parsed.profile?.birthDate) {
+		const bd = parsed.profile.birthDate;
+		if (typeof bd === "string") parsed.profile.birthDate = new Date(bd);
+		// caso seja Timestamp do Firestore
+		if (bd.seconds) parsed.profile.birthDate = new Date(bd.seconds * 1000);
+	}
+
+	return parsed;
+}

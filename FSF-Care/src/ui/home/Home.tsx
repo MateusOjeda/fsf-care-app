@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import LogoutButton from "@/src/components/LogoutButton";
 import { AuthContext } from "@/src/context/AuthContext";
 import { useContext } from "react";
+import Avatar from "@/src/components/Avatar";
 
 export default function HomeComponent() {
 	const router = useRouter();
@@ -13,6 +14,7 @@ export default function HomeComponent() {
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
 			<Text>Bem-vindo {user?.profile?.name || ""}!</Text>
+			<Avatar photoURL={user?.photoURL} size={80} />
 			<Text>Seu e-mail: {user?.email}</Text>
 			<Text>Função: {user?.role}</Text>
 			{user?.expiresAt instanceof Date && (
