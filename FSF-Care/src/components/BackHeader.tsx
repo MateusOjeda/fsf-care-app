@@ -1,24 +1,45 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 type BackHeaderProps = {
 	title?: string;
 	onPress?: () => void;
+	iconColor?: string;
+	showBorder?: boolean;
+	backgroundColor?: string;
 };
 
-export default function BackHeader({ title, onPress }: BackHeaderProps) {
+export default function BackHeader({
+	title,
+	onPress,
+	iconColor = "#3D8361",
+	showBorder = false,
+	backgroundColor = "transparent", // transparente porque a tela já tem fundo
+}: BackHeaderProps) {
 	const router = useRouter();
 
 	return (
-		<View style={styles.container}>
+		<View
+			style={[
+				styles.container,
+				{ backgroundColor },
+				showBorder && {
+					borderBottomWidth: 1,
+					borderBottomColor: "#E0E0E0",
+				},
+			]}
+		>
 			<TouchableOpacity
 				style={styles.backButton}
-				onPress={onPress === undefined ? router.back : onPress}
+				onPress={onPress ?? router.back}
+				activeOpacity={0.6}
 			>
-				<Ionicons name="chevron-back" size={24} color="#007AFF" />
-				<Text style={styles.backText}>Voltar</Text>
+				<Ionicons name="chevron-back" size={26} color={iconColor} />
+				<Text style={[styles.backText, { color: iconColor }]}>
+					Voltar
+				</Text>
 			</TouchableOpacity>
 
 			{title && <Text style={styles.title}>{title}</Text>}
@@ -28,30 +49,29 @@ export default function BackHeader({ title, onPress }: BackHeaderProps) {
 
 const styles = StyleSheet.create({
 	container: {
-		height: 60,
+		height: 56,
+		width: "100%",
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center", // centraliza título horizontalmente
-		backgroundColor: "#fff",
-		borderBottomWidth: 1,
-		borderBottomColor: "#eee",
-		paddingHorizontal: 16,
+		justifyContent: "center",
 		position: "relative",
 	},
 	backButton: {
-		position: "absolute", // fixa o botão na extrema esquerda
-		left: 8,
+		position: "absolute",
+		left: 16,
 		flexDirection: "row",
 		alignItems: "center",
+		paddingVertical: 6,
+		paddingHorizontal: 4,
 	},
 	backText: {
-		color: "#007AFF",
 		fontSize: 16,
 		marginLeft: 4,
+		fontWeight: "500",
 	},
 	title: {
 		fontSize: 18,
-		fontWeight: "bold",
-		textAlign: "center",
+		fontWeight: "600",
+		color: "#2F3E46",
 	},
 });

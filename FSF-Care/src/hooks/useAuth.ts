@@ -12,8 +12,10 @@ export function useAuth() {
 			await login(userData);
 			return true;
 		} catch (error: any) {
+			if (error.code === "auth/invalid-credential") {
+				Alert.alert("Credencial inválida.");
+			}
 			console.log("Erro login:", error);
-			Alert.alert("Erro", error.message);
 			return false;
 		}
 	};
