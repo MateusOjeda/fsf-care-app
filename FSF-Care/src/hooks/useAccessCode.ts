@@ -60,7 +60,6 @@ export function useAccessCode() {
 
 			return true;
 		} catch (error: any) {
-			Alert.alert("Erro", error.message);
 			return false;
 		} finally {
 			setLoading(false);
