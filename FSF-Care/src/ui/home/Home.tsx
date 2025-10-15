@@ -29,7 +29,7 @@ export default function HomeComponent() {
 			)}
 			<Button
 				title="Editar perfil"
-				onPress={() => router.push("/profile")}
+				onPress={() => router.push("/profile/form")}
 			/>
 			<LogoutButton />
 		</View>

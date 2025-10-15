@@ -10,9 +10,10 @@ import {
 	TouchableOpacity,
 	ActivityIndicator,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
-
+import * as ImageManipulator from "expo-image-manipulator";
 import { AuthContext } from "@/src/context/AuthContext";
 import { UserProfileIdType, Patient } from "@/src/types";
 import {
@@ -21,9 +22,11 @@ import {
 	getUserData,
 } from "@/src/firebase/userService";
 import { uploadImageAsync } from "@/src/firebase/storageService";
+import BackHeader from "@/src/components/BackHeader";
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);
+	const router = useRouter();
 
 	// Estados do form
 	const [name, setName] = useState(user?.profile?.name || "");
@@ -61,22 +64,39 @@ export default function ProfileScreen() {
 		}
 	};
 
-	// Salvar alterações (incluindo upload da foto se houver)
 	const handleSave = async () => {
 		if (!user) return;
 
 		setLoading(true);
 		try {
 			let photoURL: string | undefined = user.photoURL;
+			let photoThumbnailURL: string | undefined = user.photoThumbnailURL;
 
-			// Se usuário selecionou nova foto, faz upload para Firebase Storage
-			if (photoURI && photoURI !== user.photoURL) {
+			// Se usuário selecionou nova foto
+			if (
+				photoURI &&
+				photoURI !== user.photoURL &&
+				photoURI.startsWith("file://")
+			) {
+				// Upload da foto full-size
 				const storagePath = `users/${user.uid}.jpg`;
 				photoURL = await uploadImageAsync(photoURI, storagePath);
+
+				// Cria e upload da thumbnail
+				const manipResult = await ImageManipulator.manipulateAsync(
+					photoURI,
+					[{ resize: { width: 150, height: 150 } }],
+					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+				);
+				const thumbPath = `users/${user.uid}_thumb.jpg`;
+				photoThumbnailURL = await uploadImageAsync(
+					manipResult.uri,
+					thumbPath
+				);
 			}
 
-			// Atualiza user
-			await updateUser(user.uid, { photoURL });
+			// Atualiza user com URLs da foto
+			await updateUser(user.uid, { photoURL, photoThumbnailURL });
 
 			// Atualiza profile
 			await updateUserProfile(user.uid, {
@@ -87,7 +107,7 @@ export default function ProfileScreen() {
 				crm,
 			});
 
-			// Busca user atualizado e atualiza contexto
+			// Atualiza contexto com usuário atualizado
 			const updatedUser = await getUserData(user.uid);
 			if (!updatedUser) {
 				Alert.alert("Erro", "Usuário não encontrado após atualização.");
@@ -107,6 +127,11 @@ export default function ProfileScreen() {
 
 	return (
 		<View style={styles.container}>
+			<BackHeader
+				title="Editar Perfil"
+				onPress={() => router.replace(`/admin/home`)}
+			/>
+
 			<Text style={styles.title}>Seu Perfil</Text>
 			<Text>E-mail: {user?.email}</Text>
 			<Text>Função: {user?.role ?? "Não definido"}</Text>

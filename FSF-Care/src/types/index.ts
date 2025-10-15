@@ -19,6 +19,7 @@ export interface User {
 	expiresAt?: Date;
 	profile?: UserProfile;
 	photoURL?: string;
+	photoThumbnailURL?: string;
 }
 
 export interface AccessCode {

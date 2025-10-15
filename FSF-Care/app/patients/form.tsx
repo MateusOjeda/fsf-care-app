@@ -156,7 +156,11 @@ export default function PatientForm() {
 		<SafeAreaView style={styles.container}>
 			<BackHeader
 				title="Editar Paciente"
-				onPress={() => router.replace(`/admin/patients/${id}`)}
+				onPress={() =>
+					id !== undefined
+						? router.replace(`/admin/patients/${id}`)
+						: router.replace(`/admin/patients`)
+				}
 			/>
 
 			<TouchableOpacity onPress={handlePickImage}>
