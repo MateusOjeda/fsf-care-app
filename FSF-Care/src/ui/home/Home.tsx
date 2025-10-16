@@ -26,7 +26,7 @@ const colors = {
 	white: "#FFFFFF",
 };
 
-export default function HomeScreen() {
+export default function HomeComponent() {
 	const { user } = useContext(AuthContext);
 	const router = useRouter();
 
@@ -70,9 +70,15 @@ export default function HomeScreen() {
 					<Text style={styles.date}>Hoje é {today}</Text>
 				</View>
 				<Ionicons
-					name="heart-outline"
+					name="logo-instagram" // ou "logo-facebook", "logo-twitter"
 					size={26}
 					color={colors.primary}
+					onPress={() =>
+						Linking.openURL(
+							"https://www.instagram.com/fraternidadesemfronteiras"
+						)
+					}
+					style={{ marginLeft: 10 }}
 				/>
 			</View>
 
