@@ -8,17 +8,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import LogoutButton from "@/src/components/LogoutButton";
-
-const colors = {
-	background: "#F6F4EE",
-	textPrimary: "#2F3E46",
-	textSecondary: "#52796F",
-	primary: "#3D8361",
-	border: "#D3D3D3",
-	placeholder: "#7A7A7A",
-	white: "#FFFFFF",
-	danger: "#D64545",
-};
+import colors from "@/src/theme/colors";
 
 export default function ProfileComponent() {
 	const { user } = useContext(AuthContext);

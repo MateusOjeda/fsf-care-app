@@ -24,16 +24,7 @@ import BackHeader from "@/src/components/BackHeader";
 import Avatar from "@/src/components/Avatar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
-
-const colors = {
-	background: "#F6F4EE",
-	textPrimary: "#2F3E46",
-	textSecondary: "#52796F",
-	primary: "#3D8361",
-	border: "#D3D3D3",
-	placeholder: "#7A7A7A",
-	white: "#FFFFFF",
-};
+import colors from "@/src/theme/colors";
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);

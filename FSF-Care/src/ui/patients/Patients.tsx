@@ -14,16 +14,7 @@ import { useRouter } from "expo-router";
 import Avatar from "@/src/components/Avatar";
 import { differenceInYears } from "date-fns";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
-
-const colors = {
-	background: "#F6F4EE",
-	textPrimary: "#2F3E46",
-	textSecondary: "#52796F",
-	primary: "#3D8361",
-	border: "#D3D3D3",
-	cardBackground: "#E8E5DD",
-	white: "#fff",
-};
+import colors from "@/src/theme/colors";
 
 export default function PatientsScreen() {
 	const [patients, setPatients] = useState<{ id: string; data: Patient }[]>(
