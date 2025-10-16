@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import colors from "@/src/theme/colors";
 
 type BackHeaderProps = {
 	title?: string;
@@ -14,7 +15,7 @@ type BackHeaderProps = {
 export default function BackHeader({
 	title,
 	onPress,
-	iconColor = "#3D8361",
+	iconColor = colors.primary,
 	showBorder = false,
 	backgroundColor = "transparent", // transparente porque a tela já tem fundo
 }: BackHeaderProps) {
@@ -27,7 +28,7 @@ export default function BackHeader({
 				{ backgroundColor },
 				showBorder && {
 					borderBottomWidth: 1,
-					borderBottomColor: "#E0E0E0",
+					borderBottomColor: colors.grayLight,
 				},
 			]}
 		>
@@ -72,6 +73,6 @@ const styles = StyleSheet.create({
 	title: {
 		fontSize: 18,
 		fontWeight: "600",
-		color: "#2F3E46",
+		color: colors.textPrimary,
 	},
 });

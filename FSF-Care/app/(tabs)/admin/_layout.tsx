@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import RoleGuard from "@/src/components/guards/RoleGuard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import colors from "@/src/theme/colors";
 
 export default function TabsLayout() {
 	const insets = useSafeAreaInsets();
@@ -11,13 +12,13 @@ export default function TabsLayout() {
 			<Tabs
 				screenOptions={{
 					headerShown: false,
-					tabBarActiveTintColor: "#3D8361",
-					tabBarInactiveTintColor: "#52796F",
+					tabBarActiveTintColor: colors.primary,
+					tabBarInactiveTintColor: colors.textSecondary,
 					tabBarShowLabel: true,
 					tabBarStyle: {
-						backgroundColor: "#FFFFFF",
+						backgroundColor: colors.white,
 						borderTopWidth: 0.5,
-						borderTopColor: "#D3D3D3",
+						borderTopColor: colors.border,
 						height: 70 + insets.bottom, // ajusta altura incluindo safe area
 						paddingBottom: 10 + insets.bottom, // garante espaço seguro
 						paddingTop: 10,

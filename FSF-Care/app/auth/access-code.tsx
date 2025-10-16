@@ -3,8 +3,6 @@ import {
 	View,
 	Text,
 	TextInput,
-	TouchableOpacity,
-	ActivityIndicator,
 	StyleSheet,
 	Image,
 	KeyboardAvoidingView,
@@ -19,6 +17,7 @@ import LogoutButton from "@/src/components/LogoutButton";
 import GenerateAccessCode from "@/src/components/GenerateAccessCode";
 import { useAccessCode } from "@/src/hooks/useAccessCode";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
+import colors from "@/src/theme/colors";
 
 export default function AccessCodeScreen() {
 	const [code, setCode] = useState("");
@@ -101,7 +100,7 @@ export default function AccessCodeScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#F6F4EE",
+		backgroundColor: colors.background,
 	},
 	container: {
 		flex: 1,
@@ -121,37 +120,19 @@ const styles = StyleSheet.create({
 	message: {
 		textAlign: "center",
 		fontSize: 15,
-		color: "#2F3E46",
+		color: colors.textPrimary,
 		lineHeight: 22,
 		marginBottom: 20,
 	},
 	input: {
 		width: "100%",
-		backgroundColor: "#fff",
+		backgroundColor: colors.white,
 		borderWidth: 1,
-		borderColor: "#d3d3d3",
+		borderColor: colors.border,
 		borderRadius: 10,
 		padding: 14,
 		fontSize: 16,
 		color: "#333",
 		marginBottom: 15,
-	},
-	button: {
-		backgroundColor: "#3D8361",
-		paddingVertical: 14,
-		borderRadius: 10,
-		alignItems: "center",
-		marginBottom: 20,
-		width: "100%",
-		shadowColor: "#000",
-		shadowOpacity: 0.1,
-		shadowOffset: { width: 0, height: 2 },
-		shadowRadius: 4,
-		elevation: 3,
-	},
-	buttonText: {
-		color: "#fff",
-		fontSize: 17,
-		fontWeight: "600",
 	},
 });

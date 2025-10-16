@@ -7,6 +7,7 @@ import {
 	View,
 	ActivityIndicator,
 } from "react-native";
+import colors from "@/src/theme/colors";
 
 interface ButtonPrimaryProps {
 	title: string;
@@ -19,7 +20,7 @@ interface ButtonPrimaryProps {
 const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
 	title,
 	onPress,
-	color = "#3D8361",
+	color = colors.primary,
 	loading = false,
 	children,
 }) => {

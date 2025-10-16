@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import colors from "@/src/theme/colors";
 
 type AvatarProps = {
 	photoURL?: string;
@@ -14,7 +15,7 @@ type AvatarProps = {
 export default function Avatar({
 	photoURL,
 	size = 130,
-	borderColor = "#3D8361",
+	borderColor = colors.primary,
 	borderWidth = 3,
 	editable = false,
 	onPress,
@@ -55,7 +56,7 @@ export default function Avatar({
 							<Ionicons
 								name="person-sharp"
 								size={size / 2}
-								color="#D3D3D3"
+								color={colors.border}
 							/>
 						</View>
 					)}
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
 	},
 	editIconContainer: {
 		position: "absolute",
-		backgroundColor: "#3D8361",
+		backgroundColor: colors.primary,
 		alignItems: "center",
 		justifyContent: "center",
 		borderWidth: 2,

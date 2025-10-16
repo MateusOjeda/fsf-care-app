@@ -16,6 +16,7 @@ import { AuthContext } from "@/src/context/AuthContext";
 import { registerUser } from "@/src/firebase/auth";
 import BackHeader from "@/src/components/BackHeader";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
+import colors from "@/src/theme/colors";
 
 export default function RegisterScreen() {
 	const [email, setEmail] = useState("");
@@ -122,7 +123,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: "#F6F4EE",
+		backgroundColor: colors.background,
 	},
 	container: {
 		flex: 1,
@@ -151,42 +152,25 @@ const styles = StyleSheet.create({
 	input: {
 		backgroundColor: "#fff",
 		borderWidth: 1,
-		borderColor: "#d3d3d3",
+		borderColor: colors.border,
 		borderRadius: 10,
 		padding: 14,
 		fontSize: 16,
 		color: "#333",
 	},
-	button: {
-		backgroundColor: "#3D8361",
-		paddingVertical: 14,
-		borderRadius: 10,
-		alignItems: "center",
-		marginTop: 10,
-		shadowColor: "#000",
-		shadowOpacity: 0.1,
-		shadowOffset: { width: 0, height: 2 },
-		shadowRadius: 4,
-		elevation: 3,
-	},
-	buttonText: {
-		color: "#fff",
-		fontSize: 17,
-		fontWeight: "600",
-	},
 	linkText: {
 		textAlign: "center",
-		color: "#52796F",
+		color: colors.textSecondary,
 		fontSize: 15,
 	},
 	linkStrong: {
-		color: "#3D8361",
+		color: colors.primary,
 		fontWeight: "600",
 	},
 	welcomeMessage: {
 		textAlign: "center",
 		fontSize: 16,
-		color: "#2F3E46", // título principal da paleta
+		color: colors.textPrimary,
 		lineHeight: 22,
 	},
 });

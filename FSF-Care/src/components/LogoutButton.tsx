@@ -1,8 +1,9 @@
-import { Button, Alert } from "react-native";
+import { Alert } from "react-native";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
+import colors from "@/src/theme/colors";
 
 export default function LogoutButton() {
 	const { logout } = useContext(AuthContext);
@@ -30,7 +31,7 @@ export default function LogoutButton() {
 		<ButtonPrimary
 			title="Sair"
 			onPress={handleLogout}
-			color="#D64545"
+			color={colors.danger}
 		></ButtonPrimary>
 	);
 }
