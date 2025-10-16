@@ -15,7 +15,7 @@ export default function TabsLayout() {
 					tabBarInactiveTintColor: "#52796F",
 					tabBarShowLabel: true,
 					tabBarStyle: {
-						backgroundColor: "#FFFFFF", // barra com cor própria
+						backgroundColor: "#FFFFFF",
 						borderTopWidth: 0.5,
 						borderTopColor: "#D3D3D3",
 						height: 70 + insets.bottom, // ajusta altura incluindo safe area
@@ -23,10 +23,6 @@ export default function TabsLayout() {
 						paddingTop: 10,
 						borderTopLeftRadius: 20,
 						borderTopRightRadius: 20,
-						position: "absolute",
-						left: 0,
-						right: 0,
-						bottom: 0,
 						elevation: 5,
 						shadowColor: "#000",
 						shadowOffset: { width: 0, height: -2 },

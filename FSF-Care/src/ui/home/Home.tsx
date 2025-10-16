@@ -128,7 +128,6 @@ export default function HomeComponent() {
 			<FlatList
 				data={recentAppointments}
 				keyExtractor={(item) => item.id}
-				contentContainerStyle={{ paddingBottom: 30 }}
 				renderItem={({ item }) => (
 					<View style={styles.listItem}>
 						<Image
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: colors.background,
 		paddingHorizontal: 20,
-		paddingTop: 40,
+		paddingTop: 30,
 	},
 	header: {
 		flexDirection: "row",

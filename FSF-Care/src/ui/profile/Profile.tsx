@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: colors.background,
 		padding: 20,
+		paddingTop: 30,
 	},
 	photoContainer: {
 		alignItems: "center",
