@@ -12,6 +12,7 @@ import { AuthContext } from "@/src/context/AuthContext";
 import Avatar from "@/src/components/Avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import BackHeader from "@/src/components/BackHeader";
 
 const colors = {
 	background: "#F6F4EE",
@@ -116,7 +117,7 @@ function InfoRow({
 	label,
 	value,
 }: {
-	icon: string;
+	icon: React.ComponentProps<typeof Ionicons>["name"];
 	label: string;
 	value: string;
 }) {

@@ -1,34 +1,44 @@
 import React, { useContext, useState } from "react";
 import {
+	ScrollView,
 	View,
 	Text,
 	TextInput,
-	Button,
+	TouchableOpacity,
 	StyleSheet,
 	Alert,
-	Image,
-	TouchableOpacity,
 	ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
+import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
-import { UserProfileIdType, Patient } from "@/src/types";
+import { UserProfileIdType } from "@/src/types";
 import {
 	updateUserProfile,
 	updateUser,
 	getUserData,
 } from "@/src/firebase/userService";
 import { uploadImageAsync } from "@/src/firebase/storageService";
+import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import BackHeader from "@/src/components/BackHeader";
+import Avatar from "@/src/components/Avatar";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const colors = {
+	background: "#F6F4EE",
+	textPrimary: "#2F3E46",
+	textSecondary: "#52796F",
+	primary: "#3D8361",
+	border: "#D3D3D3",
+	placeholder: "#7A7A7A",
+	white: "#FFFFFF",
+};
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);
 	const router = useRouter();
 
-	// Estados do form
 	const [name, setName] = useState(user?.profile?.name || "");
 	const [birthDate, setBirthDate] = useState(
 		user?.profile?.birthDate
@@ -42,15 +52,12 @@ export default function ProfileScreen() {
 		user?.profile?.documentId || ""
 	);
 	const [crm, setCrm] = useState(user?.profile?.crm || "");
-
-	// Estado da imagem
 	const [photoURI, setPhotoURI] = useState<string | undefined>(
 		user?.photoURL
 	);
-
 	const [loading, setLoading] = useState(false);
 
-	// Escolher imagem localmente
+	// Selecionar imagem
 	const handlePickImage = async () => {
 		const result = await ImagePicker.launchImageLibraryAsync({
 			mediaTypes: "images",
@@ -64,30 +71,29 @@ export default function ProfileScreen() {
 		}
 	};
 
+	// Salvar perfil
 	const handleSave = async () => {
 		if (!user) return;
 
 		setLoading(true);
 		try {
-			let photoURL: string | undefined = user.photoURL;
-			let photoThumbnailURL: string | undefined = user.photoThumbnailURL;
+			let photoURL = user.photoURL;
+			let photoThumbnailURL = user.photoThumbnailURL;
 
-			// Se usuário selecionou nova foto
 			if (
 				photoURI &&
 				photoURI !== user.photoURL &&
 				photoURI.startsWith("file://")
 			) {
-				// Upload da foto full-size
 				const storagePath = `users/${user.uid}.jpg`;
 				photoURL = await uploadImageAsync(photoURI, storagePath);
 
-				// Cria e upload da thumbnail
 				const manipResult = await ImageManipulator.manipulateAsync(
 					photoURI,
 					[{ resize: { width: 150, height: 150 } }],
 					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
 				);
+
 				const thumbPath = `users/${user.uid}_thumb.jpg`;
 				photoThumbnailURL = await uploadImageAsync(
 					manipResult.uri,
@@ -95,10 +101,7 @@ export default function ProfileScreen() {
 				);
 			}
 
-			// Atualiza user com URLs da foto
 			await updateUser(user.uid, { photoURL, photoThumbnailURL });
-
-			// Atualiza profile
 			await updateUserProfile(user.uid, {
 				name,
 				birthDate: birthDate ? new Date(birthDate) : undefined,
@@ -107,15 +110,14 @@ export default function ProfileScreen() {
 				crm,
 			});
 
-			// Atualiza contexto com usuário atualizado
 			const updatedUser = await getUserData(user.uid);
 			if (!updatedUser) {
 				Alert.alert("Erro", "Usuário não encontrado após atualização.");
 				setLoading(false);
 				return;
 			}
-			await login(updatedUser);
 
+			await login(updatedUser);
 			Alert.alert("Sucesso", "Perfil atualizado!");
 		} catch (err) {
 			console.error(err);
@@ -126,111 +128,134 @@ export default function ProfileScreen() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
 			<BackHeader
 				title="Editar Perfil"
-				onPress={() => router.replace(`/admin/home`)}
+				onPress={() => router.replace(`/admin/profile`)}
 			/>
 
-			<Text style={styles.title}>Seu Perfil</Text>
-			<Text>E-mail: {user?.email}</Text>
-			<Text>Função: {user?.role ?? "Não definido"}</Text>
-
-			{/* Foto */}
-			<TouchableOpacity onPress={handlePickImage}>
-				<Image
-					source={
-						photoURI
-							? { uri: photoURI }
-							: require("@/assets/images/default-profile.png")
-					}
-					style={styles.photo}
-				/>
-				<Text style={{ textAlign: "center", color: "#007bff" }}>
-					Alterar foto
-				</Text>
-			</TouchableOpacity>
-
-			{/* Campos de formulário */}
-			<TextInput
-				style={styles.input}
-				placeholder="Nome"
-				value={name}
-				onChangeText={setName}
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Data de nascimento (YYYY-MM-DD)"
-				value={birthDate}
-				onChangeText={setBirthDate}
-			/>
-
-			<Text>Tipo de documento:</Text>
-			<Picker
-				selectedValue={documentIdType}
-				onValueChange={(value) =>
-					setDocumentIdType(value as UserProfileIdType)
-				}
-				style={styles.picker}
+			<ScrollView
+				contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
 			>
-				<Picker.Item label="RG" value="RG" />
-				<Picker.Item label="CPF" value="CPF" />
-				<Picker.Item label="Outro" value="Outro" />
-			</Picker>
+				{/* Avatar */}
+				<View style={{ alignItems: "center", marginBottom: 20 }}>
+					<Avatar
+						photoURL={photoURI}
+						size={200}
+						editable
+						onPress={handlePickImage}
+					/>
+				</View>
 
-			<TextInput
-				style={styles.input}
-				placeholder="Número do documento"
-				value={documentId}
-				onChangeText={setDocumentId}
-			/>
-
-			{user && user.role === "medico" && (
+				{/* Nome */}
+				<Text style={styles.label}>Nome</Text>
 				<TextInput
 					style={styles.input}
-					placeholder="CRM"
-					value={crm}
-					onChangeText={setCrm}
+					placeholder="Nome"
+					value={name}
+					onChangeText={setName}
 				/>
-			)}
 
-			<Text>{loading}</Text>
+				{/* Data de nascimento */}
+				<Text style={styles.label}>Data de nascimento</Text>
+				<TextInput
+					style={styles.input}
+					placeholder="YYYY-MM-DD"
+					value={birthDate}
+					onChangeText={setBirthDate}
+				/>
 
-			<Button
-				title={loading ? "Salvando..." : "Salvar"}
-				onPress={handleSave}
-				disabled={loading}
-			/>
+				{/* Tipo de documento */}
+				<Text style={styles.label}>Tipo de documento</Text>
+				<View style={styles.pickerContainer}>
+					<Picker
+						selectedValue={documentIdType}
+						onValueChange={(value) =>
+							setDocumentIdType(value as UserProfileIdType)
+						}
+					>
+						<Picker.Item label="RG" value="RG" />
+						<Picker.Item label="CPF" value="CPF" />
+						<Picker.Item label="Outro" value="Outro" />
+					</Picker>
+				</View>
 
-			{loading && (
-				<ActivityIndicator size="large" style={{ marginTop: 10 }} />
-			)}
-		</View>
+				{/* Número do documento */}
+				<Text style={styles.label}>Número do documento</Text>
+				<TextInput
+					style={styles.input}
+					placeholder="Número do documento"
+					value={documentId}
+					onChangeText={setDocumentId}
+				/>
+
+				{/* CRM, se médico */}
+				{user?.role === "medico" && (
+					<>
+						<Text style={styles.label}>CRM</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="CRM"
+							value={crm}
+							onChangeText={setCrm}
+						/>
+					</>
+				)}
+
+				{/* Botão salvar */}
+				<TouchableOpacity
+					style={styles.saveButton}
+					onPress={handleSave}
+					disabled={loading}
+				>
+					{loading ? (
+						<ActivityIndicator color={colors.white} />
+					) : (
+						<Text style={styles.saveButtonText}>Salvar</Text>
+					)}
+				</TouchableOpacity>
+			</ScrollView>
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 20, justifyContent: "center" },
-	title: { fontSize: 20, marginBottom: 10 },
+	label: {
+		color: colors.textSecondary,
+		fontSize: 14,
+		marginBottom: 4,
+		marginTop: 12,
+	},
 	input: {
 		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 10,
-		marginBottom: 15,
-		borderRadius: 5,
+		borderColor: colors.border,
+		borderRadius: 10,
+		padding: 12,
+		backgroundColor: colors.white,
+		color: colors.textPrimary,
 	},
-	picker: {
+	pickerContainer: {
 		borderWidth: 1,
-		borderColor: "#ccc",
-		borderRadius: 5,
-		marginBottom: 15,
+		borderColor: colors.border,
+		borderRadius: 10,
+		backgroundColor: colors.white,
 	},
-	photo: {
-		width: 120,
-		height: 120,
-		borderRadius: 60,
-		alignSelf: "center",
-		marginBottom: 8,
-		backgroundColor: "#eee",
+	saveButton: {
+		backgroundColor: colors.primary,
+		paddingVertical: 14,
+		borderRadius: 10,
+		alignItems: "center",
+		marginTop: 20,
+	},
+	saveButtonText: {
+		color: colors.white,
+		fontSize: 16,
+		fontWeight: "600",
+	},
+	changePhotoText: {
+		textAlign: "center",
+		color: colors.primary,
+		marginTop: 6,
+		fontWeight: "500",
 	},
 });
