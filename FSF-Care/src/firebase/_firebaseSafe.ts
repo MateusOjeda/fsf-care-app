@@ -40,10 +40,7 @@ export async function updateDocSafe(
 	docRef: DocumentReference<FirestoreData>,
 	data: Record<string, any>
 ) {
-	console.log(typeof data?.profile?.birthDate);
-	console.log(data?.profile?.birthDate);
 	const payload = removeUndefined(convertDatesToTimestamps(data));
-	console.log(data);
 	return updateDoc(docRef, payload);
 }
 

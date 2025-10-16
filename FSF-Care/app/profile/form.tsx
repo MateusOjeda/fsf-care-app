@@ -25,17 +25,17 @@ import Avatar from "@/src/components/Avatar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
+import DateInput from "@/src/components/DateInput";
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);
 	const router = useRouter();
 
 	const [name, setName] = useState(user?.profile?.name || "");
-	const [birthDate, setBirthDate] = useState(
-		user?.profile?.birthDate
-			? new Date(user.profile.birthDate).toISOString().split("T")[0]
-			: ""
+	const [birthDate, setBirthDate] = useState<Date | null>(
+		user?.profile?.birthDate || null
 	);
+
 	const [documentIdType, setDocumentIdType] = useState<UserProfileIdType>(
 		user?.profile?.documentIdType || "RG"
 	);
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
 			await updateUser(user.uid, { photoURL, photoThumbnailURL });
 			await updateUserProfile(user.uid, {
 				name,
-				birthDate: birthDate ? new Date(birthDate) : undefined,
+				birthDate: birthDate ? birthDate : undefined,
 				documentIdType: documentId !== "" ? documentIdType : undefined,
 				documentId: documentId !== "" ? documentId : undefined,
 				crm: crm ? crm : undefined,
@@ -149,11 +149,12 @@ export default function ProfileScreen() {
 
 				{/* Data de nascimento */}
 				<Text style={styles.label}>Data de nascimento</Text>
-				<TextInput
-					style={styles.input}
-					placeholder="YYYY-MM-DD"
+				<DateInput
 					value={birthDate}
-					onChangeText={setBirthDate}
+					onChange={setBirthDate}
+					placeholder="Data de nascimento"
+					formatString="dd/MM/yyyy"
+					maximumDate={new Date()}
 				/>
 
 				{/* Tipo de documento */}

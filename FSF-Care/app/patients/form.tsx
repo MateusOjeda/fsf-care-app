@@ -24,6 +24,7 @@ import BackHeader from "@/src/components/BackHeader";
 import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
+import DateInput from "@/src/components/DateInput";
 
 export default function PatientForm() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function PatientForm() {
 
 	// Form states
 	const [name, setName] = useState("");
-	const [birthDate, setBirthDate] = useState("");
+	const [birthDate, setBirthDate] = useState<Date | null>(null);
 	const [documentId, setDocumentId] = useState("");
 	const [phone, setPhone] = useState("");
 	const [address, setAddress] = useState("");
@@ -58,11 +59,7 @@ export default function PatientForm() {
 				}
 				setPatient(data);
 				setName(data.name);
-				setBirthDate(
-					data.birthDate
-						? new Date(data.birthDate).toISOString().split("T")[0]
-						: ""
-				);
+				setBirthDate(data.birthDate ? new Date(data.birthDate) : null);
 				setDocumentId(data.documentId || "");
 				setPhone(data.phone || "");
 				setAddress(data.address || "");
@@ -120,7 +117,7 @@ export default function PatientForm() {
 
 			await updatePatientById(patient.id!, {
 				name,
-				birthDate: birthDate ? new Date(birthDate) : undefined,
+				birthDate: birthDate ?? undefined,
 				documentId,
 				phone,
 				address,
@@ -178,12 +175,13 @@ export default function PatientForm() {
 						onChangeText={setName}
 						placeholderTextColor={colors.textSecondary}
 					/>
-					<TextInput
-						style={styles.input}
-						placeholder="Data de nascimento (YYYY-MM-DD)"
+					<DateInput
 						value={birthDate}
-						onChangeText={setBirthDate}
-						placeholderTextColor={colors.textSecondary}
+						onChange={setBirthDate}
+						placeholder="Data de nascimento"
+						formatString="dd/MM/yyyy"
+						maximumDate={new Date()}
+						style={styles.input}
 					/>
 					<TextInput
 						style={styles.input}

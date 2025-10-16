@@ -11,6 +11,14 @@ export function convertTimestampsToDates<T extends Record<string, any>>(
 		} else if (
 			value &&
 			typeof value === "object" &&
+			"seconds" in value &&
+			"nanoseconds" in value
+		) {
+			// Converte manualmente se veio como objeto plain
+			result[key] = new Date(value.seconds * 1000);
+		} else if (
+			value &&
+			typeof value === "object" &&
 			!Array.isArray(value)
 		) {
 			result[key] = convertTimestampsToDates(value);

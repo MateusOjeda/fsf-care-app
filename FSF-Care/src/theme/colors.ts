@@ -6,7 +6,7 @@ const colors = {
 	textPrimary: "#2F3E46",
 	textSecondary: "#52796F",
 	white: "#fff",
-	danger: "#D64545",
+	danger: "#d87d7dff",
 	success: "#4BB543",
 	warning: "#F5A623",
 	grayLight: "#E0E0E0",
