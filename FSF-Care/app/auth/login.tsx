@@ -4,7 +4,6 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	ActivityIndicator,
 	StyleSheet,
 	Image,
 	KeyboardAvoidingView,
@@ -14,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/hooks/useAuth";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 export default function LoginScreen() {
 	const router = useRouter();
@@ -76,17 +76,11 @@ export default function LoginScreen() {
 							onChangeText={setPassword}
 						/>
 
-						<TouchableOpacity
-							style={[styles.button, loading && { opacity: 0.7 }]}
+						<ButtonPrimary
+							title="Entrar"
 							onPress={handleSubmit}
-							disabled={loading}
-						>
-							{loading ? (
-								<ActivityIndicator color="#fff" />
-							) : (
-								<Text style={styles.buttonText}>Entrar</Text>
-							)}
-						</TouchableOpacity>
+							loading={loading}
+						/>
 
 						<TouchableOpacity
 							style={{ marginTop: 20 }}

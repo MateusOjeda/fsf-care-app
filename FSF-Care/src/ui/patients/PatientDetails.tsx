@@ -1,36 +1,66 @@
-// app/patients/[id].tsx
 import React, { useEffect, useState } from "react";
 import {
 	View,
 	Text,
-	ActivityIndicator,
+	ScrollView,
 	StyleSheet,
+	ActivityIndicator,
 	Alert,
-	Button,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { getPatientById } from "@/src/firebase/patientService";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { getPatientById, deletePatient } from "@/src/firebase/patientService";
 import { Patient } from "@/src/types";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import BackHeader from "@/src/components/BackHeader";
-import { deletePatient } from "@/src/firebase/patientService";
 import Avatar from "@/src/components/Avatar";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
+
+const colors = {
+	background: "#F6F4EE",
+	cardBackground: "#E8E5DD",
+	border: "#D3D3D3",
+	primary: "#3D8361",
+	textPrimary: "#2F3E46",
+	textSecondary: "#52796F",
+	white: "#fff",
+	danger: "#D64545",
+};
 
 export default function PatientDetails() {
 	const { id } = useLocalSearchParams<{ id: string }>();
+	const router = useRouter();
 	const [patient, setPatient] = useState<Patient | null>(null);
 	const [loading, setLoading] = useState(true);
-	const router = useRouter();
 
-	const handleEdit = (id: string) => {
-		router.push({
-			pathname: "/patients/form",
-			params: { id },
-		});
+	useEffect(() => {
+		if (!id) return;
+
+		const fetchPatient = async () => {
+			try {
+				const data = await getPatientById(id);
+				if (!data) {
+					Alert.alert("Erro", "Paciente não encontrado");
+					router.back();
+					return;
+				}
+				setPatient(data);
+			} catch (err) {
+				console.error(err);
+				Alert.alert("Erro", "Não foi possível carregar o paciente");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchPatient();
+	}, [id]);
+
+	const handleEdit = () => {
+		if (!id) return;
+		router.push({ pathname: "/patients/form", params: { id } });
 	};
 
-	const handleDelete = (id: string) => {
+	const handleDelete = () => {
+		if (!id) return;
 		Alert.alert(
 			"Confirmação",
 			"Tem certeza que deseja deletar este paciente?",
@@ -57,32 +87,10 @@ export default function PatientDetails() {
 		);
 	};
 
-	useEffect(() => {
-		if (!id) return;
-
-		const fetchPatient = async () => {
-			try {
-				const data = await getPatientById(id);
-				if (!data) {
-					Alert.alert("Erro", "Paciente não encontrado");
-					return;
-				}
-				setPatient(data);
-			} catch (err) {
-				console.error(err);
-				Alert.alert("Erro", "Não foi possível carregar o paciente");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchPatient();
-	}, [id]);
-
 	if (loading) {
 		return (
 			<View style={styles.center}>
-				<ActivityIndicator size="large" />
+				<ActivityIndicator size="large" color={colors.primary} />
 			</View>
 		);
 	}
@@ -96,42 +104,87 @@ export default function PatientDetails() {
 	}
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<View style={styles.container}>
 			<BackHeader
 				title="Perfil do Paciente"
 				onPress={() => router.replace(`/admin/patients`)}
 			/>
-			<Text style={styles.label}>Nome:</Text>
-			<Text style={styles.value}>{patient.name}</Text>
-			<Avatar photoURL={patient?.photoURL} size={80} />
+			<ScrollView contentContainerStyle={styles.containerScroll}>
+				<Avatar photoURL={patient.photoURL} size={120} />
 
-			<Text style={styles.label}>Data de nascimento:</Text>
-			<Text style={styles.value}>
-				{patient.birthDate
-					? new Date(patient.birthDate).toLocaleDateString()
-					: "-"}
-			</Text>
+				<View style={styles.card}>
+					<Text style={styles.label}>Nome:</Text>
+					<Text style={styles.value}>{patient.name}</Text>
+				</View>
 
-			<Text style={styles.label}>Documento:</Text>
-			<Text style={styles.value}>{patient.documentId || "-"}</Text>
+				<View style={styles.card}>
+					<Text style={styles.label}>Data de nascimento:</Text>
+					<Text style={styles.value}>
+						{patient.birthDate
+							? new Date(patient.birthDate).toLocaleDateString()
+							: "-"}
+					</Text>
+				</View>
 
-			<Text style={styles.label}>Telefone:</Text>
-			<Text style={styles.value}>{patient.phone || "-"}</Text>
+				<View style={styles.card}>
+					<Text style={styles.label}>Documento:</Text>
+					<Text style={styles.value}>
+						{patient.documentId || "-"}
+					</Text>
+				</View>
 
-			<Text style={styles.label}>Endereço:</Text>
-			<Text style={styles.value}>{patient.address || "-"}</Text>
+				<View style={styles.card}>
+					<Text style={styles.label}>Telefone:</Text>
+					<Text style={styles.value}>{patient.phone || "-"}</Text>
+				</View>
 
-			<Text style={styles.label}>Observações:</Text>
-			<Text style={styles.value}>{patient.notes || "-"}</Text>
-			<Button title="Editar paciente" onPress={() => handleEdit(id)} />
-			<Button title="Deletar paciente" onPress={() => handleDelete(id)} />
-		</SafeAreaView>
+				<View style={styles.card}>
+					<Text style={styles.label}>Endereço:</Text>
+					<Text style={styles.value}>{patient.address || "-"}</Text>
+				</View>
+
+				<View style={styles.card}>
+					<Text style={styles.label}>Observações:</Text>
+					<Text style={styles.value}>{patient.notes || "-"}</Text>
+				</View>
+
+				<ButtonPrimary
+					title="Editar paciente"
+					onPress={handleEdit}
+					color={colors.primary}
+				/>
+
+				<ButtonPrimary
+					title="Deletar paciente"
+					onPress={handleDelete}
+					color={colors.danger}
+				/>
+			</ScrollView>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16 },
+	containerScroll: {
+		alignItems: "center",
+		paddingHorizontal: 16,
+		paddingTop: 20,
+		paddingBottom: 10,
+	},
+	container: {
+		flex: 1,
+		backgroundColor: colors.background,
+	},
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	label: { fontWeight: "bold", marginTop: 12 },
-	value: { marginTop: 4 },
+	card: {
+		width: "100%",
+		backgroundColor: colors.cardBackground,
+		padding: 12,
+		borderRadius: 10,
+		marginVertical: 6,
+		borderWidth: 1,
+		borderColor: colors.border,
+	},
+	label: { fontWeight: "bold", color: colors.textPrimary, marginBottom: 4 },
+	value: { color: colors.textSecondary },
 });

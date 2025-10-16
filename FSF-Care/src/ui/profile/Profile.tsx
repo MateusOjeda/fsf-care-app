@@ -1,18 +1,13 @@
 import React, { useContext } from "react";
-import {
-	View,
-	Text,
-	StyleSheet,
-	TouchableOpacity,
-	ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
 import Avatar from "@/src/components/Avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import BackHeader from "@/src/components/BackHeader";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
+import LogoutButton from "@/src/components/LogoutButton";
 
 const colors = {
 	background: "#F6F4EE",
@@ -22,6 +17,7 @@ const colors = {
 	border: "#D3D3D3",
 	placeholder: "#7A7A7A",
 	white: "#FFFFFF",
+	danger: "#D64545",
 };
 
 export default function ProfileComponent() {
@@ -96,18 +92,18 @@ export default function ProfileComponent() {
 				)}
 			</View>
 
-			<TouchableOpacity
-				style={styles.editButton}
+			<ButtonPrimary
+				title="Editar perfil"
 				onPress={() => router.push("/profile/form")}
-				activeOpacity={0.8}
 			>
 				<Ionicons
 					name="pencil-outline"
 					size={20}
 					color={colors.white}
 				/>
-				<Text style={styles.editButtonText}>Editar perfil</Text>
-			</TouchableOpacity>
+			</ButtonPrimary>
+
+			<LogoutButton />
 		</ScrollView>
 	);
 }

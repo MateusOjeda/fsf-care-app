@@ -13,6 +13,7 @@ import { Patient } from "@/src/types";
 import { useRouter } from "expo-router";
 import Avatar from "@/src/components/Avatar";
 import { differenceInYears } from "date-fns";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 const colors = {
 	background: "#F6F4EE",
@@ -128,9 +129,7 @@ export default function PatientsScreen() {
 				}}
 			/>
 
-			<TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-				<Text style={styles.addButtonText}>Adicionar Paciente</Text>
-			</TouchableOpacity>
+			<ButtonPrimary title="Adicionar Paciente" onPress={handleAdd} />
 		</View>
 	);
 }
@@ -177,18 +176,6 @@ const styles = StyleSheet.create({
 	name: { fontWeight: "600", fontSize: 16, color: colors.textPrimary },
 	sub: { color: colors.textSecondary, fontSize: 14 },
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	addButton: {
-		backgroundColor: colors.primary,
-		borderRadius: 10,
-		paddingVertical: 16,
-		alignItems: "center",
-		marginTop: 12,
-	},
-	addButtonText: {
-		color: colors.white,
-		fontWeight: "600",
-		fontSize: 16,
-	},
 	loadingText: {
 		marginTop: 12,
 		fontSize: 16,

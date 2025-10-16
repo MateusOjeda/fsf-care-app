@@ -18,6 +18,7 @@ import BackHeader from "@/src/components/BackHeader";
 import LogoutButton from "@/src/components/LogoutButton";
 import GenerateAccessCode from "@/src/components/GenerateAccessCode";
 import { useAccessCode } from "@/src/hooks/useAccessCode";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 export default function AccessCodeScreen() {
 	const [code, setCode] = useState("");
@@ -54,6 +55,10 @@ export default function AccessCodeScreen() {
 		<SafeAreaView style={styles.safeArea}>
 			<BackHeader title="Código de Acesso" showBorder />
 
+			{/* Componentes para teste */}
+			{/* <GenerateAccessCode />
+			<LogoutButton /> */}
+
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 				style={styles.container}
@@ -82,24 +87,11 @@ export default function AccessCodeScreen() {
 						autoCapitalize="characters"
 					/>
 
-					{/* Botão validar */}
-					<TouchableOpacity
-						style={[styles.button, loading && { opacity: 0.7 }]}
+					<ButtonPrimary
+						title="Validar"
 						onPress={handleValidate}
-						disabled={loading}
-					>
-						{loading ? (
-							<ActivityIndicator color="#fff" />
-						) : (
-							<Text style={styles.buttonText}>Validar</Text>
-						)}
-					</TouchableOpacity>
-
-					{/* Componentes adicionais */}
-					{/* <View style={styles.bottomButtons}>
-						<GenerateAccessCode />
-						<LogoutButton />
-					</View> */}
+						loading={loading}
+					/>
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
@@ -161,11 +153,5 @@ const styles = StyleSheet.create({
 		color: "#fff",
 		fontSize: 17,
 		fontWeight: "600",
-	},
-	bottomButtons: {
-		width: "100%",
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginTop: 10,
 	},
 });

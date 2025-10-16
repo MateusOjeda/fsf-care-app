@@ -47,9 +47,18 @@ export function convertDatesToTimestamps<T extends Record<string, any>>(
 export function removeUndefined<T extends Record<string, any>>(
 	obj: T
 ): Partial<T> {
-	return Object.fromEntries(
-		Object.entries(obj).filter(([, v]) => v !== undefined)
-	) as Partial<T>;
+	if (Array.isArray(obj)) {
+		return obj
+			.map((v) => removeUndefined(v))
+			.filter((v) => v !== undefined) as any;
+	} else if (obj && typeof obj === "object") {
+		return Object.fromEntries(
+			Object.entries(obj)
+				.filter(([, v]) => v !== undefined)
+				.map(([k, v]) => [k, removeUndefined(v)])
+		) as Partial<T>;
+	}
+	return obj;
 }
 
 export function parseUserFromStorage(stored: string) {

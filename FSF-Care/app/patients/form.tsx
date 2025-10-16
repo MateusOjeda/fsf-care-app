@@ -3,12 +3,10 @@ import {
 	View,
 	Text,
 	TextInput,
-	Button,
+	ScrollView,
+	ActivityIndicator,
 	StyleSheet,
 	Alert,
-	Image,
-	TouchableOpacity,
-	ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -23,6 +21,19 @@ import {
 } from "@/src/firebase/patientService";
 import { uploadImageAsync } from "@/src/firebase/storageService";
 import BackHeader from "@/src/components/BackHeader";
+import Avatar from "@/src/components/Avatar";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
+
+const colors = {
+	background: "#F6F4EE",
+	cardBackground: "#E8E5DD",
+	border: "#D3D3D3",
+	primary: "#3D8361",
+	textPrimary: "#2F3E46",
+	textSecondary: "#52796F",
+	white: "#fff",
+	shadow: "rgba(0,0,0,0.1)",
+};
 
 export default function PatientForm() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,7 +52,6 @@ export default function PatientForm() {
 	const [notes, setNotes] = useState("");
 	const [photoURI, setPhotoURI] = useState<string | undefined>();
 
-	// Carregar paciente se houver id
 	useEffect(() => {
 		if (!id) {
 			setLoading(false);
@@ -81,7 +91,7 @@ export default function PatientForm() {
 
 	const handlePickImage = async () => {
 		const result = await ImagePicker.launchImageLibraryAsync({
-			mediaTypes: "images",
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [1, 1],
 			quality: 0.7,
@@ -94,7 +104,6 @@ export default function PatientForm() {
 
 	const handleSave = async () => {
 		if (!patient) return;
-
 		setSaving(true);
 		try {
 			let photoURL = patient.photoURL;
@@ -105,21 +114,17 @@ export default function PatientForm() {
 				photoURI.startsWith("file://") &&
 				photoURI !== patient.photoURL
 			) {
-				// Upload da foto full-size
 				const storagePath = `patients/${patient.id}.jpg`;
 				photoURL = await uploadImageAsync(photoURI, storagePath);
 
-				// Cria e upload da thumbnail
 				const manipResult = await ImageManipulator.manipulateAsync(
 					photoURI,
-					[{ resize: { width: 150, height: 150 } }], // tamanho da thumbnail
+					[{ resize: { width: 150, height: 150 } }],
 					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
 				);
-
-				const thumbPath = `patients/${patient.id}_thumb.jpg`;
 				photoThumbnailURL = await uploadImageAsync(
 					manipResult.uri,
-					thumbPath
+					`patients/${patient.id}_thumb.jpg`
 				);
 			}
 
@@ -135,7 +140,7 @@ export default function PatientForm() {
 			});
 
 			Alert.alert("Sucesso", "Paciente atualizado!");
-			router.back();
+			router.replace(id ? `/admin/patients/${id}` : `/admin/patients`);
 		} catch (err) {
 			console.error(err);
 			Alert.alert("Erro", "Não foi possível atualizar o paciente");
@@ -147,102 +152,144 @@ export default function PatientForm() {
 	if (loading) {
 		return (
 			<View style={styles.center}>
-				<ActivityIndicator size="large" />
+				<ActivityIndicator size="large" color={colors.primary} />
+				<Text style={styles.loadingText}>Carregando paciente...</Text>
 			</View>
 		);
 	}
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={styles.safeArea}>
 			<BackHeader
-				title="Editar Paciente"
+				title={id ? "Editar Paciente" : "Novo Paciente"}
 				onPress={() =>
-					id !== undefined
-						? router.replace(`/admin/patients/${id}`)
-						: router.replace(`/admin/patients`)
+					router.replace(
+						id ? `/admin/patients/${id}` : `/admin/patients`
+					)
 				}
 			/>
 
-			<TouchableOpacity onPress={handlePickImage}>
-				<Image
-					source={
-						photoURI
-							? { uri: photoURI }
-							: require("@/assets/images/default-profile.png")
-					}
-					style={styles.photo}
+			<ScrollView
+				contentContainerStyle={styles.container}
+				showsVerticalScrollIndicator={false}
+			>
+				<Avatar
+					photoURL={photoURI}
+					size={120}
+					editable
+					onPress={handlePickImage}
 				/>
-				<Text style={{ textAlign: "center", color: "#007bff" }}>
-					Alterar foto
-				</Text>
-			</TouchableOpacity>
 
-			<TextInput
-				style={styles.input}
-				placeholder="Nome"
-				value={name}
-				onChangeText={setName}
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Data de nascimento (YYYY-MM-DD)"
-				value={birthDate}
-				onChangeText={setBirthDate}
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Documento"
-				value={documentId}
-				onChangeText={setDocumentId}
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Telefone"
-				value={phone}
-				onChangeText={setPhone}
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Endereço"
-				value={address}
-				onChangeText={setAddress}
-			/>
-			<TextInput
-				style={[styles.input, { height: 80 }]}
-				placeholder="Observações"
-				value={notes}
-				onChangeText={setNotes}
-				multiline
-			/>
+				<View style={styles.formCard}>
+					<TextInput
+						style={styles.input}
+						placeholder="Nome"
+						value={name}
+						onChangeText={setName}
+						placeholderTextColor={colors.textSecondary}
+					/>
+					<TextInput
+						style={styles.input}
+						placeholder="Data de nascimento (YYYY-MM-DD)"
+						value={birthDate}
+						onChangeText={setBirthDate}
+						placeholderTextColor={colors.textSecondary}
+					/>
+					<TextInput
+						style={styles.input}
+						placeholder="Documento"
+						value={documentId}
+						onChangeText={setDocumentId}
+						placeholderTextColor={colors.textSecondary}
+					/>
+					<TextInput
+						style={styles.input}
+						placeholder="Telefone"
+						value={phone}
+						onChangeText={setPhone}
+						placeholderTextColor={colors.textSecondary}
+					/>
+					<TextInput
+						style={styles.input}
+						placeholder="Endereço"
+						value={address}
+						onChangeText={setAddress}
+						placeholderTextColor={colors.textSecondary}
+					/>
+					<TextInput
+						style={[
+							styles.input,
+							{ height: 90, textAlignVertical: "top" },
+						]}
+						placeholder="Observações"
+						value={notes}
+						onChangeText={setNotes}
+						placeholderTextColor={colors.textSecondary}
+						multiline
+					/>
+				</View>
 
-			<Button
-				title={saving ? "Salvando..." : "Salvar"}
-				onPress={handleSave}
-				disabled={saving}
-			/>
-			{saving && (
-				<ActivityIndicator size="large" style={{ marginTop: 10 }} />
-			)}
+				<ButtonPrimary
+					onPress={handleSave}
+					loading={saving}
+					title={saving ? "Salvando..." : "Salvar"}
+				/>
+			</ScrollView>
 		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 16 },
-	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	input: {
-		borderWidth: 1,
-		borderColor: "#ccc",
-		padding: 10,
-		marginBottom: 15,
-		borderRadius: 5,
+	safeArea: { flex: 1, backgroundColor: colors.background },
+	container: {
+		padding: 20,
+		alignItems: "center",
 	},
-	photo: {
-		width: 120,
-		height: 120,
-		borderRadius: 60,
-		alignSelf: "center",
-		marginBottom: 8,
-		backgroundColor: "#eee",
+	center: { flex: 1, justifyContent: "center", alignItems: "center" },
+	loadingText: {
+		marginTop: 10,
+		color: colors.textSecondary,
+		fontSize: 14,
+	},
+	formCard: {
+		width: "100%",
+		backgroundColor: colors.cardBackground,
+		borderRadius: 16,
+		padding: 20,
+		marginTop: 10,
+		marginBottom: 20,
+		shadowColor: colors.shadow,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 6,
+		elevation: 3,
+	},
+	input: {
+		width: "100%",
+		borderWidth: 1,
+		borderColor: colors.border,
+		borderRadius: 10,
+		padding: 12,
+		marginBottom: 14,
+		backgroundColor: colors.white,
+		color: colors.textPrimary,
+		fontSize: 15,
+	},
+	saveButton: {
+		backgroundColor: colors.primary,
+		paddingVertical: 15,
+		paddingHorizontal: 40,
+		borderRadius: 12,
+		shadowColor: colors.shadow,
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	saveButtonText: {
+		color: colors.white,
+		fontWeight: "600",
+		fontSize: 16,
+		textAlign: "center",
 	},
 });

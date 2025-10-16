@@ -4,7 +4,6 @@ import {
 	View,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	StyleSheet,
 	Alert,
 	ActivityIndicator,
@@ -24,6 +23,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import BackHeader from "@/src/components/BackHeader";
 import Avatar from "@/src/components/Avatar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 const colors = {
 	background: "#F6F4EE",
@@ -105,9 +105,9 @@ export default function ProfileScreen() {
 			await updateUserProfile(user.uid, {
 				name,
 				birthDate: birthDate ? new Date(birthDate) : undefined,
-				documentIdType,
-				documentId,
-				crm,
+				documentIdType: documentId !== "" ? documentIdType : undefined,
+				documentId: documentId !== "" ? documentId : undefined,
+				crm: crm ? crm : undefined,
 			});
 
 			const updatedUser = await getUserData(user.uid);
@@ -202,18 +202,11 @@ export default function ProfileScreen() {
 					</>
 				)}
 
-				{/* Botão salvar */}
-				<TouchableOpacity
-					style={styles.saveButton}
+				<ButtonPrimary
 					onPress={handleSave}
-					disabled={loading}
-				>
-					{loading ? (
-						<ActivityIndicator color={colors.white} />
-					) : (
-						<Text style={styles.saveButtonText}>Salvar</Text>
-					)}
-				</TouchableOpacity>
+					loading={loading}
+					title="Salvar"
+				/>
 			</ScrollView>
 		</SafeAreaView>
 	);

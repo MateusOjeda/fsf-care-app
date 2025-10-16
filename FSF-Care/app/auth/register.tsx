@@ -3,7 +3,6 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	ActivityIndicator,
 	Alert,
 	StyleSheet,
 	View,
@@ -16,6 +15,7 @@ import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
 import { registerUser } from "@/src/firebase/auth";
 import BackHeader from "@/src/components/BackHeader";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 export default function RegisterScreen() {
 	const [email, setEmail] = useState("");
@@ -97,17 +97,11 @@ export default function RegisterScreen() {
 							onChangeText={setPassword}
 						/>
 
-						<TouchableOpacity
-							style={[styles.button, loading && { opacity: 0.7 }]}
+						<ButtonPrimary
+							title="Registrar"
 							onPress={handleRegister}
-							disabled={loading}
-						>
-							{loading ? (
-								<ActivityIndicator color="#fff" />
-							) : (
-								<Text style={styles.buttonText}>Registrar</Text>
-							)}
-						</TouchableOpacity>
+							loading={loading}
+						/>
 
 						<TouchableOpacity
 							style={{ marginTop: 20 }}
