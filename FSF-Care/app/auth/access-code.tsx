@@ -96,10 +96,10 @@ export default function AccessCodeScreen() {
 					</TouchableOpacity>
 
 					{/* Componentes adicionais */}
-					<View style={styles.bottomButtons}>
+					{/* <View style={styles.bottomButtons}>
 						<GenerateAccessCode />
 						<LogoutButton />
-					</View>
+					</View> */}
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
