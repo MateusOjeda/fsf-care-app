@@ -59,7 +59,6 @@ export default function PatientDetails() {
 
 	useEffect(() => {
 		if (!id) return;
-
 		fetchPatient();
 	}, [id]);
 
@@ -84,7 +83,7 @@ export default function PatientDetails() {
 				onPress={() => router.replace(`/admin/patients`)}
 			/>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
-				{/* Foto + Nome + Idade */}
+				{/* Cabeçalho */}
 				<View style={styles.header}>
 					<Avatar photoURL={patient.photoThumbnailURL} size={120} />
 					<Text style={styles.name}>{patient.name}</Text>
@@ -99,7 +98,8 @@ export default function PatientDetails() {
 				</View>
 
 				{/* Informações básicas */}
-				<View style={styles.infoCard}>
+				<View style={styles.sectionCard}>
+					<Text style={styles.sectionTitle}>Informações básicas</Text>
 					<Text style={styles.infoLabel}>Documento</Text>
 					<Text style={styles.infoValue}>
 						{patient.documentId || "-"}
@@ -115,76 +115,87 @@ export default function PatientDetails() {
 
 					<Text style={styles.infoLabel}>Observações</Text>
 					<Text style={styles.infoValue}>{patient.notes || "-"}</Text>
+
+					<ButtonPrimary
+						title="Editar"
+						onPress={handleEdit}
+						style={{ marginTop: 10 }}
+					/>
 				</View>
 
-				<ButtonPrimary
-					title="Editar"
-					onPress={handleEdit}
-					style={{ marginBottom: 18 }}
-				/>
-
-				<Text style={styles.sectionTitle}>Fichas de Cuidados</Text>
-				{patient.careSheetSummaries &&
-				patient.careSheetSummaries.length > 0 ? (
-					patient.careSheetSummaries
-						.sort(
-							(a, b) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime()
-						)
-						.map((cs) => (
-							<TouchableOpacity
-								key={cs.id}
-								style={styles.careSheetCard}
-								onPress={() => {
-									console.log(
-										`/admin/patients/careSheet/${cs.id}`
-									);
-									router.push(
-										`/admin/patients/careSheet/${cs.id}`
-									);
-								}}
-							>
-								<Text style={styles.careSheetDate}>
-									{new Date(
-										cs.createdAt
-									).toLocaleDateString()}
-								</Text>
-								<Text style={styles.careSheetVersion}>
-									Versão: {cs.version}
-								</Text>
-							</TouchableOpacity>
-						))
-				) : (
-					<Text
-						style={{
-							marginBottom: 12,
-							color: colors.textSecondary,
-						}}
-					>
-						Nenhuma ficha de cuidados encontrada
-					</Text>
-				)}
-
-				<ButtonPrimary
-					title="Nova Ficha de Cuidados"
-					onPress={() => setCareSheetVisible(true)}
-					style={{ marginBottom: 18 }}
-				/>
-
-				{/* Atendimentos */}
-				<Text style={styles.sectionTitle}>Atendimentos</Text>
-				{mockAppointments.map((a) => (
-					<View key={a.id} style={styles.appointmentCard}>
-						<Text style={styles.appointmentDate}>{a.date}</Text>
-						<Text style={styles.appointmentProfessional}>
-							{a.professional}
+				{/* CARD: Fichas de Cuidados */}
+				<View style={styles.sectionCard}>
+					<Text style={styles.sectionTitle}>Fichas de Cuidados</Text>
+					{patient.careSheetSummaries &&
+					patient.careSheetSummaries.length > 0 ? (
+						patient.careSheetSummaries
+							.sort(
+								(a, b) =>
+									new Date(b.createdAt).getTime() -
+									new Date(a.createdAt).getTime()
+							)
+							.map((cs) => (
+								<TouchableOpacity
+									key={cs.id}
+									style={styles.careSheetCard}
+									onPress={() =>
+										router.push(
+											`/admin/patients/careSheet/${cs.id}`
+										)
+									}
+								>
+									<Text style={styles.careSheetDate}>
+										{new Date(
+											cs.createdAt
+										).toLocaleDateString()}
+									</Text>
+									<Text style={styles.careSheetVersion}>
+										Versão: {cs.version}
+									</Text>
+								</TouchableOpacity>
+							))
+					) : (
+						<Text style={styles.emptyText}>
+							Nenhuma ficha de cuidados encontrada
 						</Text>
-						<Text style={styles.appointmentNotes}>{a.notes}</Text>
-					</View>
-				))}
+					)}
+					<ButtonPrimary
+						title="Nova Ficha de Cuidados"
+						onPress={() => setCareSheetVisible(true)}
+						style={{ marginTop: 10 }}
+					/>
+				</View>
 
-				{/* Modal da Ficha de Cuidados */}
+				{/* CARD: Atendimentos */}
+				<View style={styles.sectionCard}>
+					<Text style={styles.sectionTitle}>Atendimentos</Text>
+					{mockAppointments && mockAppointments.length > 0 ? (
+						mockAppointments.map((a) => (
+							<View key={a.id} style={styles.appointmentCard}>
+								<Text style={styles.appointmentDate}>
+									{a.date}
+								</Text>
+								<Text style={styles.appointmentProfessional}>
+									{a.professional}
+								</Text>
+								<Text style={styles.appointmentNotes}>
+									{a.notes}
+								</Text>
+							</View>
+						))
+					) : (
+						<Text style={styles.emptyText}>
+							Nenhum atendimento encontrado
+						</Text>
+					)}
+					<ButtonPrimary
+						title="Novo Atendimento"
+						onPress={() => console.log("Novo atendimento")}
+						style={{ marginTop: 10 }}
+					/>
+				</View>
+
+				{/* Modal de ficha */}
 				<CareSheetModal
 					visible={careSheetVisible}
 					onClose={() => setCareSheetVisible(false)}
@@ -216,49 +227,31 @@ const styles = StyleSheet.create({
 		marginTop: 12,
 	},
 	age: { fontSize: 16, color: colors.textSecondary, marginTop: 4 },
-
-	infoCard: {
+	infoLabel: { fontSize: 14, color: colors.textSecondary, marginTop: 8 },
+	infoValue: { fontSize: 16, color: colors.textPrimary, marginTop: 2 },
+	sectionCard: {
 		backgroundColor: colors.cardBackground,
 		borderRadius: 16,
 		padding: 16,
-		marginBottom: 16,
+		marginBottom: 20,
+		borderWidth: 1,
+		borderColor: colors.border,
+		shadowColor: "#000",
+		shadowOpacity: 0.05,
+		shadowRadius: 6,
+		shadowOffset: { width: 0, height: 3 },
+		elevation: 2,
 	},
-	infoLabel: { fontSize: 14, color: colors.textSecondary, marginTop: 8 },
-	infoValue: { fontSize: 16, color: colors.textPrimary, marginTop: 2 },
-
-	buttonRow: { flexDirection: "row", marginBottom: 20 },
-
 	sectionTitle: {
 		fontSize: 18,
 		fontWeight: "600",
 		color: colors.textPrimary,
 		marginBottom: 12,
 	},
-
-	appointmentCard: {
-		backgroundColor: colors.cardBackground,
-		borderRadius: 12,
-		padding: 12,
-		marginBottom: 10,
-		borderWidth: 1,
-		borderColor: colors.border,
-		shadowColor: "#000",
-		shadowOpacity: 0.05,
-		shadowRadius: 4,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
-	},
-
-	appointmentDate: { fontSize: 14, color: colors.textSecondary },
-	appointmentProfessional: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: colors.textPrimary,
-	},
-	appointmentNotes: { fontSize: 14, color: colors.textPrimary, marginTop: 4 },
+	emptyText: { color: colors.textSecondary, marginBottom: 12 },
 	careSheetCard: {
-		backgroundColor: colors.cardBackground,
-		borderRadius: 12,
+		backgroundColor: colors.white,
+		borderRadius: 10,
 		padding: 12,
 		marginBottom: 10,
 		borderWidth: 1,
@@ -270,4 +263,19 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: colors.textPrimary,
 	},
+	appointmentCard: {
+		backgroundColor: colors.white,
+		borderRadius: 10,
+		padding: 12,
+		marginBottom: 10,
+		borderWidth: 1,
+		borderColor: colors.border,
+	},
+	appointmentDate: { fontSize: 14, color: colors.textSecondary },
+	appointmentProfessional: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: colors.textPrimary,
+	},
+	appointmentNotes: { fontSize: 14, color: colors.textPrimary, marginTop: 4 },
 });

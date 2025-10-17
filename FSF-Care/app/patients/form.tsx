@@ -136,9 +136,10 @@ export default function PatientForm() {
 					photoThumbnailURL,
 				});
 				// Alert.alert("Sucesso", "Paciente atualizado!");
+				router.push(`/admin/patients/${patient.id}`);
 			} else {
 				// Cria novo paciente
-				await createPatient({
+				const newPatientId = await createPatient({
 					name,
 					birthDate: birthDate ?? undefined,
 					documentId,
@@ -150,10 +151,9 @@ export default function PatientForm() {
 					createdBy: patient?.createdBy || createdBy,
 					createdAt: new Date(),
 				});
-				Alert.alert("Sucesso", "Paciente criado!");
+				// Alert.alert("Sucesso", "Paciente criado!");
+				router.push(`/admin/patients/${newPatientId}`);
 			}
-
-			router.replace("/admin/patients");
 		} catch (err) {
 			console.error(err);
 			Alert.alert("Erro", "Não foi possível salvar o paciente");
