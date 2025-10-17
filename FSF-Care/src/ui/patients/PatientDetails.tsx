@@ -4,27 +4,47 @@ import {
 	Text,
 	ScrollView,
 	StyleSheet,
-	ActivityIndicator,
 	Alert,
+	ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { getPatientById, deletePatient } from "@/src/firebase/patientService";
+import { getPatientById } from "@/src/firebase/patientService";
 import { Patient } from "@/src/types";
 import BackHeader from "@/src/components/BackHeader";
 import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
+// import CareSheetModal from "@/src/components/CareSheetModal";
 
-export default function PatientDetails() {
+type PatientDetailsProps = {};
+
+const mockAppointments = [
+	{
+		id: "1",
+		date: "2025-01-15",
+		professional: "Dr. João Silva",
+		notes: "Consulta de rotina",
+	},
+	{
+		id: "2",
+		date: "2025-02-20",
+		professional: "Dra. Maria Souza",
+		notes: "Retorno para ajustes",
+	},
+];
+
+export default function PatientDetails({}: PatientDetailsProps) {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
 	const [patient, setPatient] = useState<Patient | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [careSheetVisible, setCareSheetVisible] = useState(false);
 
 	useEffect(() => {
 		if (!id) return;
 
 		const fetchPatient = async () => {
+			setLoading(true);
 			try {
 				const data = await getPatientById(id);
 				if (!data) {
@@ -49,46 +69,11 @@ export default function PatientDetails() {
 		router.push({ pathname: "/patients/form", params: { id } });
 	};
 
-	const handleDelete = () => {
-		if (!id) return;
-		Alert.alert(
-			"Confirmação",
-			"Tem certeza que deseja deletar este paciente?",
-			[
-				{ text: "Cancelar", style: "cancel" },
-				{
-					text: "Deletar",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await deletePatient(id);
-							Alert.alert("Sucesso", "Paciente deletado!");
-							router.replace("/admin/patients");
-						} catch (err) {
-							console.error(err);
-							Alert.alert(
-								"Erro",
-								"Não foi possível deletar o paciente"
-							);
-						}
-					},
-				},
-			]
-		);
-	};
-
-	if (loading) {
+	if (loading || !patient) {
 		return (
 			<View style={styles.center}>
 				<ActivityIndicator size="large" color={colors.primary} />
-			</View>
-		);
-	}
-
-	if (!patient) {
-		return (
-			<View style={styles.center}>
-				<Text>Paciente não encontrado</Text>
+				<Text style={styles.loadingText}>Carregando paciente...</Text>
 			</View>
 		);
 	}
@@ -100,55 +85,63 @@ export default function PatientDetails() {
 				onPress={() => router.replace(`/admin/patients`)}
 			/>
 			<ScrollView contentContainerStyle={styles.containerScroll}>
-				<Avatar photoURL={patient.photoURL} size={120} />
-
-				<View style={styles.card}>
-					<Text style={styles.label}>Nome:</Text>
-					<Text style={styles.value}>{patient.name}</Text>
-				</View>
-
-				<View style={styles.card}>
-					<Text style={styles.label}>Data de nascimento:</Text>
-					<Text style={styles.value}>
+				{/* Foto + Nome + Idade */}
+				<View style={styles.header}>
+					<Avatar photoURL={patient.photoThumbnailURL} size={120} />
+					<Text style={styles.name}>{patient.name}</Text>
+					<Text style={styles.age}>
 						{patient.birthDate
-							? new Date(patient.birthDate).toLocaleDateString()
+							? `${
+									new Date().getFullYear() -
+									new Date(patient.birthDate).getFullYear()
+							  } anos`
 							: "-"}
 					</Text>
 				</View>
 
-				<View style={styles.card}>
-					<Text style={styles.label}>Documento:</Text>
-					<Text style={styles.value}>
+				{/* Informações básicas */}
+				<View style={styles.infoCard}>
+					<Text style={styles.infoLabel}>Documento</Text>
+					<Text style={styles.infoValue}>
 						{patient.documentId || "-"}
 					</Text>
+
+					<Text style={styles.infoLabel}>Telefone</Text>
+					<Text style={styles.infoValue}>{patient.phone || "-"}</Text>
+
+					<Text style={styles.infoLabel}>Endereço</Text>
+					<Text style={styles.infoValue}>
+						{patient.address || "-"}
+					</Text>
+
+					<Text style={styles.infoLabel}>Observações</Text>
+					<Text style={styles.infoValue}>{patient.notes || "-"}</Text>
 				</View>
 
-				<View style={styles.card}>
-					<Text style={styles.label}>Telefone:</Text>
-					<Text style={styles.value}>{patient.phone || "-"}</Text>
-				</View>
-
-				<View style={styles.card}>
-					<Text style={styles.label}>Endereço:</Text>
-					<Text style={styles.value}>{patient.address || "-"}</Text>
-				</View>
-
-				<View style={styles.card}>
-					<Text style={styles.label}>Observações:</Text>
-					<Text style={styles.value}>{patient.notes || "-"}</Text>
-				</View>
-
+				<ButtonPrimary title="Editar" onPress={handleEdit} />
 				<ButtonPrimary
-					title="Editar paciente"
-					onPress={handleEdit}
-					color={colors.primary}
+					title="Ficha de Cuidados"
+					onPress={() => setCareSheetVisible(true)}
+					style={{ marginBottom: 18 }}
 				/>
 
-				<ButtonPrimary
-					title="Deletar paciente"
-					onPress={handleDelete}
-					color={colors.danger}
-				/>
+				{/* Atendimentos */}
+				<Text style={styles.sectionTitle}>Atendimentos</Text>
+				{mockAppointments.map((a) => (
+					<View key={a.id} style={styles.appointmentCard}>
+						<Text style={styles.appointmentDate}>{a.date}</Text>
+						<Text style={styles.appointmentProfessional}>
+							{a.professional}
+						</Text>
+						<Text style={styles.appointmentNotes}>{a.notes}</Text>
+					</View>
+				))}
+
+				{/* Modal da Ficha de Cuidados */}
+				{/* <CareSheetModal
+				visible={careSheetVisible}
+				onClose={() => setCareSheetVisible(false)}
+			/> */}
 			</ScrollView>
 		</View>
 	);
@@ -156,7 +149,6 @@ export default function PatientDetails() {
 
 const styles = StyleSheet.create({
 	containerScroll: {
-		alignItems: "center",
 		paddingHorizontal: 16,
 		paddingTop: 20,
 		paddingBottom: 10,
@@ -166,15 +158,54 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.background,
 	},
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	card: {
-		width: "100%",
+	loadingText: { marginTop: 12, fontSize: 16, color: colors.textSecondary },
+
+	header: { alignItems: "center", marginBottom: 20 },
+	name: {
+		fontSize: 22,
+		fontWeight: "600",
+		color: colors.textPrimary,
+		marginTop: 12,
+	},
+	age: { fontSize: 16, color: colors.textSecondary, marginTop: 4 },
+
+	infoCard: {
 		backgroundColor: colors.cardBackground,
+		borderRadius: 16,
+		padding: 16,
+		marginBottom: 16,
+	},
+	infoLabel: { fontSize: 14, color: colors.textSecondary, marginTop: 8 },
+	infoValue: { fontSize: 16, color: colors.textPrimary, marginTop: 2 },
+
+	buttonRow: { flexDirection: "row", marginBottom: 20 },
+
+	sectionTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: colors.textPrimary,
+		marginBottom: 12,
+	},
+
+	appointmentCard: {
+		backgroundColor: colors.cardBackground,
+		borderRadius: 12,
 		padding: 12,
-		borderRadius: 10,
-		marginVertical: 6,
+		marginBottom: 10,
 		borderWidth: 1,
 		borderColor: colors.border,
+		shadowColor: "#000",
+		shadowOpacity: 0.05,
+		shadowRadius: 4,
+		shadowOffset: { width: 0, height: 2 },
+		elevation: 2,
 	},
-	label: { fontWeight: "bold", color: colors.textPrimary, marginBottom: 4 },
-	value: { color: colors.textSecondary },
+
+	appointmentDate: { fontSize: 14, color: colors.textSecondary },
+	appointmentProfessional: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: colors.textPrimary,
+	},
+	appointmentNotes: { fontSize: 14, color: colors.textPrimary, marginTop: 4 },
 });

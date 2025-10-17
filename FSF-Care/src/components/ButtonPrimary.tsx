@@ -15,6 +15,7 @@ interface ButtonPrimaryProps {
 	color?: string;
 	loading?: boolean;
 	children?: React.ReactNode; // ícone ou outro elemento
+	style?: object;
 }
 
 const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
@@ -23,12 +24,14 @@ const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
 	color = colors.primary,
 	loading = false,
 	children,
+	style,
 }) => {
 	return (
 		<TouchableOpacity
 			style={[
 				styles.button,
 				{ backgroundColor: color, opacity: loading ? 0.6 : 1 },
+				style,
 			]}
 			onPress={onPress}
 			activeOpacity={0.8}

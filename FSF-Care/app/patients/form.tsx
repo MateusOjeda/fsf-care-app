@@ -19,6 +19,7 @@ import {
 	getPatientById,
 	updatePatientById,
 	createPatient,
+	deletePatient,
 } from "@/src/firebase/patientService";
 import { uploadImageAsync } from "@/src/firebase/storageService";
 import BackHeader from "@/src/components/BackHeader";
@@ -161,6 +162,34 @@ export default function PatientForm() {
 		}
 	};
 
+	const handleDelete = () => {
+		if (!id) return;
+		Alert.alert(
+			"Excluir Paciente",
+			"Tem certeza que deseja excluir este paciente?",
+			[
+				{ text: "Cancelar", style: "cancel" },
+				{
+					text: "Excluir",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							await deletePatient(id);
+							Alert.alert("Sucesso", "Paciente deletado!");
+							router.replace("/admin/patients");
+						} catch (err) {
+							console.error(err);
+							Alert.alert(
+								"Erro",
+								"Não foi possível deletar o paciente"
+							);
+						}
+					},
+				},
+			]
+		);
+	};
+
 	if (loading) {
 		return (
 			<View style={styles.center}>
@@ -246,6 +275,12 @@ export default function PatientForm() {
 					onPress={handleSave}
 					loading={saving}
 					title={saving ? "Salvando..." : "Salvar"}
+				/>
+
+				<ButtonPrimary
+					title="Excluir"
+					onPress={handleDelete}
+					style={{ backgroundColor: colors.danger, marginTop: 20 }}
 				/>
 			</ScrollView>
 		</SafeAreaView>
