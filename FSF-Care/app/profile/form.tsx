@@ -42,6 +42,9 @@ export default function ProfileScreen() {
 	const [documentId, setDocumentId] = useState(
 		user?.profile?.documentId || ""
 	);
+	const [gender, setGender] = useState<"female" | "male" | "other">(
+		user?.profile?.gender || "other"
+	);
 	const [crm, setCrm] = useState(user?.profile?.crm || "");
 	const [photoURI, setPhotoURI] = useState<string | undefined>(
 		user?.photoURL
@@ -64,6 +67,7 @@ export default function ProfileScreen() {
 
 	// Salvar perfil
 	const handleSave = async () => {
+		console.log(user);
 		if (!user) return;
 
 		setLoading(true);
@@ -99,6 +103,7 @@ export default function ProfileScreen() {
 				documentIdType: documentId !== "" ? documentIdType : undefined,
 				documentId: documentId !== "" ? documentId : undefined,
 				crm: crm ? crm : undefined,
+				gender: gender ? gender : undefined,
 			});
 
 			const updatedUser = await getUserData(user.uid);
@@ -157,6 +162,22 @@ export default function ProfileScreen() {
 					maximumDate={new Date()}
 				/>
 
+				{/* Gênero */}
+				<Text style={styles.label}>Gênero</Text>
+				<View style={styles.pickerContainer}>
+					<Picker
+						selectedValue={user?.profile?.gender || gender}
+						onValueChange={(value) =>
+							setGender(value as "female" | "male" | "other")
+						}
+						itemStyle={styles.input}
+					>
+						<Picker.Item label="Feminino" value="female" />
+						<Picker.Item label="Masculino" value="male" />
+						<Picker.Item label="Outro" value="other" />
+					</Picker>
+				</View>
+
 				{/* Tipo de documento */}
 				<Text style={styles.label}>Tipo de documento</Text>
 				<View style={styles.pickerContainer}>
@@ -165,6 +186,7 @@ export default function ProfileScreen() {
 						onValueChange={(value) =>
 							setDocumentIdType(value as UserProfileIdType)
 						}
+						itemStyle={styles.input}
 					>
 						<Picker.Item label="RG" value="RG" />
 						<Picker.Item label="CPF" value="CPF" />
@@ -198,6 +220,7 @@ export default function ProfileScreen() {
 					onPress={handleSave}
 					loading={loading}
 					title="Salvar"
+					style={{ marginTop: 30 }}
 				/>
 			</ScrollView>
 		</SafeAreaView>
@@ -218,6 +241,7 @@ const styles = StyleSheet.create({
 		padding: 12,
 		backgroundColor: colors.white,
 		color: colors.textPrimary,
+		fontSize: 16,
 	},
 	pickerContainer: {
 		borderWidth: 1,

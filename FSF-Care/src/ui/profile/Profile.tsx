@@ -10,6 +10,12 @@ import ButtonPrimary from "@/src/components/ButtonPrimary";
 import LogoutButton from "@/src/components/LogoutButton";
 import colors from "@/src/theme/colors";
 
+const GENDER_LABELS: Record<string, string> = {
+	male: "Masculino",
+	female: "Feminino",
+	other: "Outro",
+};
+
 export default function ProfileComponent() {
 	const { user } = useContext(AuthContext);
 	const router = useRouter();
@@ -55,6 +61,13 @@ export default function ProfileComponent() {
 							"dd/MM/yyyy",
 							{ locale: ptBR }
 						)}
+					/>
+				)}
+				{profile?.gender && (
+					<InfoRow
+						icon="calendar-outline"
+						label="Genero"
+						value={GENDER_LABELS[profile.gender]}
 					/>
 				)}
 				{profile?.documentId && profile?.documentIdType && (

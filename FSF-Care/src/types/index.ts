@@ -8,6 +8,7 @@ export interface UserProfile {
 	documentIdType?: UserProfileIdType;
 	documentId?: string;
 	crm?: string; // para médicos
+	gender?: "female" | "male" | "other";
 }
 
 export interface User {
