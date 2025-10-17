@@ -212,7 +212,12 @@ const styles = StyleSheet.create({
 	container: { flex: 1, padding: 20, backgroundColor: colors.background },
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 	title: { fontSize: 22, fontWeight: "600", marginBottom: 20 },
-	scroll: { paddingBottom: 40 },
+	scroll: {
+		paddingBottom: 40,
+		position: "absolute",
+		bottom: 0,
+		width: "100%",
+	},
 	question: { fontSize: 16, fontWeight: "600", marginBottom: 12 },
 	input: {
 		borderWidth: 1,

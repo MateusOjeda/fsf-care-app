@@ -6,6 +6,7 @@ import {
 	StyleSheet,
 	Alert,
 	ActivityIndicator,
+	TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { getPatientById } from "@/src/firebase/patientService";
@@ -15,8 +16,6 @@ import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import CareSheetModal from "@/src/ui/patients/CareSheetModal";
-
-type PatientDetailsProps = {};
 
 const mockAppointments = [
 	{
@@ -33,7 +32,7 @@ const mockAppointments = [
 	},
 ];
 
-export default function PatientDetails({}: PatientDetailsProps) {
+export default function PatientDetails() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
 	const [patient, setPatient] = useState<Patient | null>(null);
@@ -118,7 +117,55 @@ export default function PatientDetails({}: PatientDetailsProps) {
 					<Text style={styles.infoValue}>{patient.notes || "-"}</Text>
 				</View>
 
-				<ButtonPrimary title="Editar" onPress={handleEdit} />
+				<ButtonPrimary
+					title="Editar"
+					onPress={handleEdit}
+					style={{ marginBottom: 18 }}
+				/>
+
+				<Text style={styles.sectionTitle}>Fichas de Cuidados</Text>
+				{patient.careSheetSummaries &&
+				patient.careSheetSummaries.length > 0 ? (
+					patient.careSheetSummaries
+						.sort(
+							(a, b) =>
+								new Date(b.createdAt).getTime() -
+								new Date(a.createdAt).getTime()
+						)
+						.map((cs) => (
+							<TouchableOpacity
+								key={cs.id}
+								style={styles.careSheetCard}
+								onPress={() => {
+									console.log(
+										`/admin/patients/careSheet/${cs.id}`
+									);
+									router.push(
+										`/admin/patients/careSheet/${cs.id}`
+									);
+								}}
+							>
+								<Text style={styles.careSheetDate}>
+									{new Date(
+										cs.createdAt
+									).toLocaleDateString()}
+								</Text>
+								<Text style={styles.careSheetVersion}>
+									Versão: {cs.version}
+								</Text>
+							</TouchableOpacity>
+						))
+				) : (
+					<Text
+						style={{
+							marginBottom: 12,
+							color: colors.textSecondary,
+						}}
+					>
+						Nenhuma ficha de cuidados encontrada
+					</Text>
+				)}
+
 				<ButtonPrimary
 					title="Nova Ficha de Cuidados"
 					onPress={() => setCareSheetVisible(true)}
@@ -160,7 +207,6 @@ const styles = StyleSheet.create({
 	},
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 	loadingText: { marginTop: 12, fontSize: 16, color: colors.textSecondary },
-
 	header: { alignItems: "center", marginBottom: 20 },
 	name: {
 		fontSize: 22,
@@ -209,4 +255,18 @@ const styles = StyleSheet.create({
 		color: colors.textPrimary,
 	},
 	appointmentNotes: { fontSize: 14, color: colors.textPrimary, marginTop: 4 },
+	careSheetCard: {
+		backgroundColor: colors.cardBackground,
+		borderRadius: 12,
+		padding: 12,
+		marginBottom: 10,
+		borderWidth: 1,
+		borderColor: colors.border,
+	},
+	careSheetDate: { fontSize: 14, color: colors.textSecondary },
+	careSheetVersion: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: colors.textPrimary,
+	},
 });

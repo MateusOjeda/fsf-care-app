@@ -1,7 +1,12 @@
 import { db } from "./_config";
-import { addDocSafe, updateDocSafe } from "./_firebaseSafe";
-import { doc, collection } from "firebase/firestore";
-import { Patient, CareSheetAnswers, CareSheetSummary } from "../types";
+import { addDocSafe, updateDocSafe, getDocSafeWithId } from "./_firebaseSafe";
+import { doc, collection, DocumentReference } from "firebase/firestore";
+import {
+	Patient,
+	CareSheetAnswers,
+	CareSheetSummary,
+	CareSheetData,
+} from "../types";
 
 export async function saveCareSheet(
 	patient: Patient,
@@ -39,4 +44,18 @@ export async function saveCareSheet(
 	});
 
 	return careSheetRef.id;
+}
+
+/**
+ * Busca a ficha pelo ID
+ */
+export async function getCareSheetById(
+	id: string
+): Promise<CareSheetData | null> {
+	const careSheetRef = doc(
+		db,
+		"careSheets",
+		id
+	) as DocumentReference<CareSheetData>;
+	return await getDocSafeWithId<CareSheetData>(careSheetRef);
 }
