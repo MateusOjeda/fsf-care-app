@@ -43,4 +43,39 @@ export interface Patient {
 	createdAt?: Date;
 	photoURL?: string;
 	photoThumbnailURL?: string;
+	careSheetIds?: string[];
 }
+
+// Caresheet:
+
+export type Option = {
+	pt: string;
+	en: string;
+};
+
+export type Question = {
+	pergunta_pt: string;
+	pergunta_en: string;
+	tipo: "texto" | "data" | "multipla_escolha" | "checkbox" | "grupo";
+	opcoes?: Option[];
+};
+
+export type CareSheetAnswers = {
+	[key: string]: any;
+};
+
+// 🔹 Metadados do questionário versionado
+export type CareSheetVersion = {
+	id: string; // ex: "default_care_sheet"
+	version: string; // ex: "v1"
+	questions: Record<string, Question>;
+};
+
+// 🔹 Estrutura que será salva no Firestore
+export type CareSheetData = {
+	patientId: string;
+	questionnaireId: string;
+	version: string;
+	answers: CareSheetAnswers;
+	createdAt: Date;
+};

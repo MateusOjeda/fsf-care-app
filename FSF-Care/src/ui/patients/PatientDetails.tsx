@@ -14,7 +14,7 @@ import BackHeader from "@/src/components/BackHeader";
 import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
-// import CareSheetModal from "@/src/components/CareSheetModal";
+import CareSheetModal from "@/src/ui/patients/CareSheetModal";
 
 type PatientDetailsProps = {};
 
@@ -120,7 +120,7 @@ export default function PatientDetails({}: PatientDetailsProps) {
 
 				<ButtonPrimary title="Editar" onPress={handleEdit} />
 				<ButtonPrimary
-					title="Ficha de Cuidados"
+					title="Nova Ficha de Cuidados"
 					onPress={() => setCareSheetVisible(true)}
 					style={{ marginBottom: 18 }}
 				/>
@@ -138,10 +138,11 @@ export default function PatientDetails({}: PatientDetailsProps) {
 				))}
 
 				{/* Modal da Ficha de Cuidados */}
-				{/* <CareSheetModal
-				visible={careSheetVisible}
-				onClose={() => setCareSheetVisible(false)}
-			/> */}
+				<CareSheetModal
+					visible={careSheetVisible}
+					onClose={() => setCareSheetVisible(false)}
+					patient={patient}
+				/>
 			</ScrollView>
 		</View>
 	);
