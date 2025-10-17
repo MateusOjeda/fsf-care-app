@@ -43,7 +43,7 @@ export interface Patient {
 	createdAt?: Date;
 	photoURL?: string;
 	photoThumbnailURL?: string;
-	careSheetIds?: string[];
+	careSheetSummaries?: CareSheetSummary[];
 }
 
 // Caresheet:
@@ -78,4 +78,10 @@ export type CareSheetData = {
 	version: string;
 	answers: CareSheetAnswers;
 	createdAt: Date;
+};
+
+export type CareSheetSummary = {
+	id: string;
+	version: string;
+	createdAt: string;
 };
