@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { fetchPatients } from "@/src/firebase/patientService";
 import { Patient } from "@/src/types";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import Avatar from "@/src/components/Avatar";
 import { differenceInYears } from "date-fns";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
@@ -19,6 +19,10 @@ import { AuthContext } from "@/src/context/AuthContext";
 
 export default function PatientsScreen() {
 	const { user } = useContext(AuthContext);
+	const { initialFilter } = useLocalSearchParams<{
+		initialFilter?: "all" | "mine";
+	}>();
+
 	const [patients, setPatients] = useState<{ id: string; data: Patient }[]>(
 		[]
 	);
@@ -27,6 +31,7 @@ export default function PatientsScreen() {
 	);
 	const [search, setSearch] = useState("");
 	const [filter, setFilter] = useState<"all" | "mine">("all");
+
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
@@ -62,6 +67,10 @@ export default function PatientsScreen() {
 
 		setFiltered(list);
 	}, [search, patients, filter]);
+
+	useEffect(() => {
+		initialFilter && setFilter(initialFilter);
+	}, [initialFilter]);
 
 	const handleAdd = () => router.push("/patients/form");
 

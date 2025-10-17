@@ -92,19 +92,29 @@ export default function HomeComponent() {
 			{/* Ações principais (grid 2x2) */}
 			<View style={styles.actionGrid}>
 				<ActionButton
-					icon="people-outline"
-					label="Meus pacientes"
-					onPress={() => router.push("/patients")}
-				/>
-				<ActionButton
 					icon="search-outline"
 					label="Encontrar paciente"
-					onPress={() => router.push("/patients/search")}
+					onPress={() =>
+						router.push({
+							pathname: "/admin/patients",
+							params: { initialFilter: "all" },
+						})
+					}
+				/>
+				<ActionButton
+					icon="people-outline"
+					label="Meus pacientes"
+					onPress={() =>
+						router.push({
+							pathname: "/admin/patients",
+							params: { initialFilter: "mine" },
+						})
+					}
 				/>
 				<ActionButton
 					icon="person-add-outline"
 					label="Adicionar paciente"
-					onPress={() => router.push("/patients/new")}
+					onPress={() => router.push("/patients/form")}
 				/>
 				<ActionButton
 					icon="person-circle-outline"
