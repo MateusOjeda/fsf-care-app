@@ -14,25 +14,28 @@ import colors from "@/src/theme/colors";
 import { CareSheetData } from "@/src/types";
 import {
 	getCareSheetById,
-	// deleteCareSheet,
+	deleteCareSheet,
 } from "@/src/firebase/careSheetService";
 import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 
 export default function CareSheetComponent() {
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id: careSheetId, patientId } = useLocalSearchParams<{
+		id: string;
+		patientId: string;
+	}>();
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [careSheet, setCareSheet] = useState<CareSheetData | null>(null);
 	const [deleting, setDeleting] = useState(false);
 
 	useEffect(() => {
-		if (!id) return;
+		if (!careSheetId) return;
 
 		const fetchCareSheet = async () => {
 			setLoading(true);
 			try {
-				const data = await getCareSheetById(id);
+				const data = await getCareSheetById(careSheetId);
 				if (!data) {
 					Alert.alert("Erro", "Ficha não encontrada");
 					router.back();
@@ -48,7 +51,7 @@ export default function CareSheetComponent() {
 		};
 
 		fetchCareSheet();
-	}, [id]);
+	}, [careSheetId]);
 
 	const handleDelete = async () => {
 		if (!careSheet) return;
@@ -63,9 +66,9 @@ export default function CareSheetComponent() {
 					onPress: async () => {
 						setDeleting(true);
 						try {
-							// await deleteCareSheet(id);
+							await deleteCareSheet(patientId, careSheetId);
 							// Alert.alert("Sucesso", "Ficha deletada");
-							// router.back();
+							router.push(`/admin/patients/${patientId}`);
 						} catch (err) {
 							console.error(err);
 							Alert.alert(

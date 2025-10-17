@@ -139,9 +139,14 @@ export default function PatientDetails() {
 									key={cs.id}
 									style={styles.careSheetCard}
 									onPress={() =>
-										router.push(
-											`/admin/patients/careSheet/${cs.id}`
-										)
+										router.push({
+											pathname:
+												"/admin/patients/careSheet/[id]",
+											params: {
+												id: cs.id,
+												patientId: patient.id,
+											},
+										})
 									}
 								>
 									<Text style={styles.careSheetDate}>
