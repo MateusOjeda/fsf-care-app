@@ -21,6 +21,7 @@ type CareSheetModalProps = {
 	onClose: () => void;
 	patient: Patient;
 	version?: QuestionVersion;
+	onRefresh?: () => {};
 };
 
 export default function CareSheetModal({
@@ -28,6 +29,7 @@ export default function CareSheetModal({
 	onClose,
 	patient,
 	version = "v1",
+	onRefresh,
 }: CareSheetModalProps) {
 	const [started, setStarted] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,6 +53,7 @@ export default function CareSheetModal({
 		setCurrentIndex(0);
 		setAnswers({});
 		onClose();
+		if (onRefresh) onRefresh();
 	};
 
 	const handleSave = async () => {

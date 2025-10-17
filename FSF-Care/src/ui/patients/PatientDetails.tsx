@@ -39,26 +39,26 @@ export default function PatientDetails() {
 	const [loading, setLoading] = useState(true);
 	const [careSheetVisible, setCareSheetVisible] = useState(false);
 
+	const fetchPatient = async () => {
+		setLoading(true);
+		try {
+			const data = await getPatientById(id);
+			if (!data) {
+				Alert.alert("Erro", "Paciente não encontrado");
+				router.back();
+				return;
+			}
+			setPatient(data);
+		} catch (err) {
+			console.error(err);
+			Alert.alert("Erro", "Não foi possível carregar o paciente");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		if (!id) return;
-
-		const fetchPatient = async () => {
-			setLoading(true);
-			try {
-				const data = await getPatientById(id);
-				if (!data) {
-					Alert.alert("Erro", "Paciente não encontrado");
-					router.back();
-					return;
-				}
-				setPatient(data);
-			} catch (err) {
-				console.error(err);
-				Alert.alert("Erro", "Não foi possível carregar o paciente");
-			} finally {
-				setLoading(false);
-			}
-		};
 
 		fetchPatient();
 	}, [id]);
@@ -189,6 +189,7 @@ export default function PatientDetails() {
 					visible={careSheetVisible}
 					onClose={() => setCareSheetVisible(false)}
 					patient={patient}
+					onRefresh={fetchPatient}
 				/>
 			</ScrollView>
 		</View>
