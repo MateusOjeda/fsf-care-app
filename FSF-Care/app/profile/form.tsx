@@ -6,12 +6,11 @@ import {
 	TextInput,
 	StyleSheet,
 	Alert,
-	ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
-import { UserProfileIdType } from "@/src/types";
+import { UserProfileIdType, GenderType } from "@/src/types";
 import {
 	updateUserProfile,
 	updateUser,
@@ -26,6 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import DateInput from "@/src/components/DateInput";
+import { GENDER_LABELS } from "@/src/data/labels";
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
 	const [documentId, setDocumentId] = useState(
 		user?.profile?.documentId || ""
 	);
-	const [gender, setGender] = useState<"female" | "male" | "other">(
+	const [gender, setGender] = useState<GenderType>(
 		user?.profile?.gender || "other"
 	);
 	const [crm, setCrm] = useState(user?.profile?.crm || "");
@@ -168,13 +168,13 @@ export default function ProfileScreen() {
 					<Picker
 						selectedValue={user?.profile?.gender || gender}
 						onValueChange={(value) =>
-							setGender(value as "female" | "male" | "other")
+							setGender(value as GenderType)
 						}
 						itemStyle={styles.input}
 					>
-						<Picker.Item label="Feminino" value="female" />
-						<Picker.Item label="Masculino" value="male" />
-						<Picker.Item label="Outro" value="other" />
+						{Object.entries(GENDER_LABELS).map(([key, label]) => (
+							<Picker.Item key={key} label={label} value={key} />
+						))}
 					</Picker>
 				</View>
 

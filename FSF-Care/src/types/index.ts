@@ -2,13 +2,15 @@ export type UserRole = "admin" | "medico" | "psicossocial" | "geral";
 
 export type UserProfileIdType = "RG" | "CPF" | "Outro";
 
+export type GenderType = "female" | "male" | "other";
+
 export interface UserProfile {
 	name?: string;
 	birthDate?: Date;
 	documentIdType?: UserProfileIdType;
 	documentId?: string;
 	crm?: string; // para médicos
-	gender?: "female" | "male" | "other";
+	gender?: GenderType;
 }
 
 export interface User {
@@ -45,6 +47,7 @@ export interface Patient {
 	photoURL?: string;
 	photoThumbnailURL?: string;
 	careSheetSummaries?: CareSheetSummary[];
+	gender?: GenderType;
 }
 
 // Caresheet:

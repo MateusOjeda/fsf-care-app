@@ -16,6 +16,7 @@ import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import CareSheetModal from "@/src/ui/patients/CareSheetModal";
+import { GENDER_LABELS } from "@/src/data/labels";
 
 const mockAppointments = [
 	{
@@ -99,22 +100,61 @@ export default function PatientDetails() {
 
 				{/* Informações básicas */}
 				<View style={styles.sectionCard}>
-					<Text style={styles.sectionTitle}>Informações básicas</Text>
-					<Text style={styles.infoLabel}>Documento</Text>
-					<Text style={styles.infoValue}>
-						{patient.documentId || "-"}
-					</Text>
+					{patient.birthDate && (
+						<>
+							<Text style={styles.infoLabel}>
+								Data de nascimento
+							</Text>
+							<Text style={styles.infoValue}>
+								{patient.birthDate.toLocaleDateString("pt-BR")}
+							</Text>
+						</>
+					)}
 
-					<Text style={styles.infoLabel}>Telefone</Text>
-					<Text style={styles.infoValue}>{patient.phone || "-"}</Text>
+					{patient.gender && (
+						<>
+							<Text style={styles.infoLabel}>Gênero</Text>
+							<Text style={styles.infoValue}>
+								{GENDER_LABELS[patient.gender]}
+							</Text>
+						</>
+					)}
 
-					<Text style={styles.infoLabel}>Endereço</Text>
-					<Text style={styles.infoValue}>
-						{patient.address || "-"}
-					</Text>
+					{patient.documentId && (
+						<>
+							<Text style={styles.infoLabel}>Documento</Text>
+							<Text style={styles.infoValue}>
+								{patient.documentId}
+							</Text>
+						</>
+					)}
 
-					<Text style={styles.infoLabel}>Observações</Text>
-					<Text style={styles.infoValue}>{patient.notes || "-"}</Text>
+					{patient.phone && (
+						<>
+							<Text style={styles.infoLabel}>Telefone</Text>
+							<Text style={styles.infoValue}>
+								{patient.phone}
+							</Text>
+						</>
+					)}
+
+					{patient.address && (
+						<>
+							<Text style={styles.infoLabel}>Endereço</Text>
+							<Text style={styles.infoValue}>
+								{patient.address}
+							</Text>
+						</>
+					)}
+
+					{patient.notes && (
+						<>
+							<Text style={styles.infoLabel}>Observações</Text>
+							<Text style={styles.infoValue}>
+								{patient.notes}
+							</Text>
+						</>
+					)}
 
 					<ButtonPrimary
 						title="Editar"

@@ -14,7 +14,7 @@ import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Patient } from "@/src/types";
+import { GenderType, Patient } from "@/src/types";
 import {
 	getPatientById,
 	updatePatientById,
@@ -28,6 +28,8 @@ import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import DateInput from "@/src/components/DateInput";
 import { AuthContext } from "@/src/context/AuthContext";
+import { GENDER_LABELS } from "@/src/data/labels";
+import { Picker } from "@react-native-picker/picker";
 
 export default function PatientForm() {
 	const { user } = useContext(AuthContext);
@@ -45,6 +47,7 @@ export default function PatientForm() {
 	const [documentId, setDocumentId] = useState("");
 	const [phone, setPhone] = useState("");
 	const [address, setAddress] = useState("");
+	const [gender, setGender] = useState<GenderType | null>(null);
 	const [notes, setNotes] = useState("");
 	const [photoURI, setPhotoURI] = useState<string | undefined>();
 
@@ -67,6 +70,7 @@ export default function PatientForm() {
 				setBirthDate(data.birthDate ? new Date(data.birthDate) : null);
 				setDocumentId(data.documentId || "");
 				setPhone(data.phone || "");
+				setGender(data.gender || null);
 				setAddress(data.address || "");
 				setNotes(data.notes || "");
 				setPhotoURI(data.photoURL);
@@ -134,6 +138,7 @@ export default function PatientForm() {
 					notes,
 					photoURL,
 					photoThumbnailURL,
+					gender: gender ?? undefined,
 				});
 				// Alert.alert("Sucesso", "Paciente atualizado!");
 				router.push(`/admin/patients/${patient.id}`);
@@ -222,6 +227,7 @@ export default function PatientForm() {
 				/>
 
 				<View style={styles.formCard}>
+					<Text style={styles.label}>Nome</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="Nome"
@@ -229,6 +235,7 @@ export default function PatientForm() {
 						onChangeText={setName}
 						placeholderTextColor={colors.textSecondary}
 					/>
+					<Text style={styles.label}>Data de nascimento</Text>
 					<DateInput
 						value={birthDate}
 						onChange={setBirthDate}
@@ -237,6 +244,26 @@ export default function PatientForm() {
 						maximumDate={new Date()}
 						style={styles.input}
 					/>
+					<Text style={styles.label}>Gênero</Text>
+					<View style={styles.pickerContainer}>
+						<Picker
+							selectedValue={gender ?? "other"}
+							onValueChange={(value) =>
+								setGender(value as GenderType)
+							}
+						>
+							{Object.entries(GENDER_LABELS).map(
+								([key, label]) => (
+									<Picker.Item
+										key={key}
+										label={label}
+										value={key}
+									/>
+								)
+							)}
+						</Picker>
+					</View>
+					<Text style={styles.label}>Documento</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="Documento"
@@ -244,6 +271,7 @@ export default function PatientForm() {
 						onChangeText={setDocumentId}
 						placeholderTextColor={colors.textSecondary}
 					/>
+					<Text style={styles.label}>Telefone</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="Telefone"
@@ -251,6 +279,7 @@ export default function PatientForm() {
 						onChangeText={setPhone}
 						placeholderTextColor={colors.textSecondary}
 					/>
+					<Text style={styles.label}>Endereço</Text>
 					<TextInput
 						style={styles.input}
 						placeholder="Endereço"
@@ -258,6 +287,7 @@ export default function PatientForm() {
 						onChangeText={setAddress}
 						placeholderTextColor={colors.textSecondary}
 					/>
+					<Text style={styles.label}>Observações</Text>
 					<TextInput
 						style={[
 							styles.input,
@@ -339,5 +369,20 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		fontSize: 16,
 		textAlign: "center",
+	},
+	pickerContainer: {
+		width: "100%",
+		borderWidth: 1,
+		borderColor: colors.border,
+		borderRadius: 10,
+		backgroundColor: colors.white,
+		marginBottom: 14,
+	},
+	label: {
+		width: "100%",
+		marginBottom: 4,
+		fontSize: 14,
+		color: colors.textSecondary,
+		fontWeight: "500",
 	},
 });
