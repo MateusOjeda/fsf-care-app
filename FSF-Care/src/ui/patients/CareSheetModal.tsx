@@ -1,4 +1,3 @@
-// CareSheetModal.tsx
 import React, { useState } from "react";
 import {
 	View,
@@ -8,11 +7,12 @@ import {
 	TouchableOpacity,
 	TextInput,
 	ScrollView,
-	Button,
+	Alert,
 } from "react-native";
 import DateInput from "@/src/components/DateInput";
-import { Patient, CareSheetAnswers, Option, Question } from "@/src/types";
+import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
+import { Patient, CareSheetAnswers, Option } from "@/src/types";
 import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import { saveCareSheet } from "@/src/firebase/careSheetService";
 
@@ -21,7 +21,7 @@ type CareSheetModalProps = {
 	onClose: () => void;
 	patient: Patient;
 	version?: QuestionVersion;
-	onRefresh?: () => {};
+	onRefresh?: () => void;
 };
 
 export default function CareSheetModal({
@@ -34,6 +34,7 @@ export default function CareSheetModal({
 	const [started, setStarted] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [answers, setAnswers] = useState<CareSheetAnswers>({});
+	const [saving, setSaving] = useState(false);
 
 	const QUESTIONS = getQuestionsByVersion(version);
 	const questionKeys = Object.keys(QUESTIONS);
@@ -49,25 +50,36 @@ export default function CareSheetModal({
 	};
 
 	const handleCancel = () => {
-		setStarted(false);
-		setCurrentIndex(0);
-		setAnswers({});
-		onClose();
-		if (onRefresh) onRefresh();
+		Alert.alert("Tem certeza?", " Todas as respostas serão apagadas.", [
+			{
+				text: "Não",
+				style: "cancel",
+			},
+			{
+				text: "Sim, cancelar",
+				style: "destructive",
+				onPress: () => {
+					setStarted(false);
+					setCurrentIndex(0);
+					setAnswers({});
+					onClose();
+					if (onRefresh) onRefresh();
+				},
+			},
+		]);
 	};
 
 	const handleSave = async () => {
 		if (!patient) return;
-
+		setSaving(true);
 		try {
-			const careSheetId = await saveCareSheet(patient, answers, version);
-			console.log("CareSheet salva com sucesso:", careSheetId);
-
-			// resetar estado
+			await saveCareSheet(patient, answers, version);
 			handleCancel();
 		} catch (error) {
 			console.error("Erro ao salvar CareSheet:", error);
 			alert("Não foi possível salvar a ficha. Tente novamente.");
+		} finally {
+			setSaving(false);
 		}
 	};
 
@@ -100,48 +112,60 @@ export default function CareSheetModal({
 
 			case "multipla_escolha":
 			case "checkbox":
-				if (!("opcoes" in currentQuestion) || !currentQuestion.opcoes)
-					return null;
+				if (!currentQuestion.opcoes) return null;
 
 				const selected: string[] =
 					currentQuestion.tipo === "checkbox"
 						? answers[questionKeys[currentIndex]] || []
 						: [];
 
-				return currentQuestion.opcoes.map((opt: Option) => (
-					<TouchableOpacity
-						key={opt.pt}
-						style={[
-							styles.optionButton,
-							(currentQuestion.tipo === "multipla_escolha" &&
-								answers[questionKeys[currentIndex]] ===
-									opt.pt) ||
-							(currentQuestion.tipo === "checkbox" &&
-								selected.includes(opt.pt))
-								? styles.optionSelected
-								: undefined,
-						]}
-						onPress={() => {
-							if (currentQuestion.tipo === "multipla_escolha") {
-								handleAnswerChange(opt.pt);
-							} else if (currentQuestion.tipo === "checkbox") {
-								if (selected.includes(opt.pt)) {
-									handleAnswerChange(
-										selected.filter((s) => s !== opt.pt)
-									);
+				return currentQuestion.opcoes.map((opt: Option) => {
+					const isSelected =
+						(currentQuestion.tipo === "multipla_escolha" &&
+							answers[questionKeys[currentIndex]] === opt.pt) ||
+						(currentQuestion.tipo === "checkbox" &&
+							selected.includes(opt.pt));
+
+					return (
+						<TouchableOpacity
+							key={opt.pt}
+							style={[
+								styles.optionButton,
+								isSelected && styles.optionSelected,
+							]}
+							onPress={() => {
+								if (
+									currentQuestion.tipo === "multipla_escolha"
+								) {
+									handleAnswerChange(opt.pt);
 								} else {
-									handleAnswerChange([...selected, opt.pt]);
+									if (selected.includes(opt.pt)) {
+										handleAnswerChange(
+											selected.filter((s) => s !== opt.pt)
+										);
+									} else {
+										handleAnswerChange([
+											...selected,
+											opt.pt,
+										]);
+									}
 								}
-							}
-						}}
-					>
-						<Text>{opt.pt}</Text>
-					</TouchableOpacity>
-				));
+							}}
+						>
+							<Text
+								style={[
+									styles.optionText,
+									isSelected && styles.optionTextSelected,
+								]}
+							>
+								{opt.pt}
+							</Text>
+						</TouchableOpacity>
+					);
+				});
 
 			case "grupo":
-				if (!("opcoes" in currentQuestion) || !currentQuestion.opcoes)
-					return null;
+				if (!currentQuestion.opcoes) return null;
 
 				const groupValues = answers[questionKeys[currentIndex]] || {};
 				return currentQuestion.opcoes.map((opt: Option) => (
@@ -170,41 +194,68 @@ export default function CareSheetModal({
 				{!started ? (
 					<View style={styles.center}>
 						<Text style={styles.title}>Ficha de Cuidados</Text>
-						<Button
+						<ButtonPrimary
 							title="Iniciar"
 							onPress={() => setStarted(true)}
+							style={{ marginBottom: 10 }}
 						/>
-						<Button
+						<ButtonPrimary
 							title="Fechar"
 							onPress={onClose}
-							color={colors.danger}
+							style={{ backgroundColor: colors.danger }}
 						/>
 					</View>
 				) : (
-					<ScrollView contentContainerStyle={styles.scroll}>
-						<Text style={styles.question}>
-							{currentQuestion.pergunta_pt}
-						</Text>
-						{renderQuestionInput()}
+					<>
+						<ScrollView
+							contentContainerStyle={styles.scroll}
+							keyboardShouldPersistTaps="handled"
+						>
+							<Text style={styles.question}>
+								{currentQuestion.pergunta_pt}
+							</Text>
 
-						<View style={styles.navigation}>
-							<Button
+							{renderQuestionInput()}
+						</ScrollView>
+
+						{/* Botões fixos no rodapé */}
+						<View style={styles.footer}>
+							<ButtonPrimary
 								title="Cancelar"
-								color={colors.danger}
 								onPress={handleCancel}
+								style={{
+									backgroundColor: colors.danger,
+									flex: 1,
+								}}
 							/>
 
-							{currentIndex > 0 && (
-								<Button title="Anterior" onPress={handlePrev} />
-							)}
+							<ButtonPrimary
+								title="Anterior"
+								onPress={handlePrev}
+								style={{
+									backgroundColor: colors.cardBackground,
+									flex: 1,
+								}}
+								textStyle={{ color: colors.textPrimary }}
+								disabled={currentIndex === 0}
+							/>
 
 							{currentIndex + 1 < questionKeys.length ? (
-								<Button title="Próximo" onPress={handleNext} />
+								<ButtonPrimary
+									title="Próximo"
+									onPress={handleNext}
+									style={{ flex: 1 }}
+								/>
 							) : (
-								<Button title="Salvar" onPress={handleSave} />
+								<ButtonPrimary
+									title={saving ? "Salvando..." : "Salvar"}
+									onPress={handleSave}
+									loading={saving}
+									style={{ flex: 1 }}
+								/>
 							)}
 						</View>
-					</ScrollView>
+					</>
 				)}
 			</View>
 		</Modal>
@@ -212,22 +263,38 @@ export default function CareSheetModal({
 }
 
 const styles = StyleSheet.create({
-	container: { flex: 1, padding: 20, backgroundColor: colors.background },
-	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	title: { fontSize: 22, fontWeight: "600", marginBottom: 20 },
-	scroll: {
-		paddingBottom: 40,
-		position: "absolute",
-		bottom: 0,
-		width: "100%",
+	container: {
+		flex: 1,
+		paddingHorizontal: 20,
+		paddingTop: 20,
+		backgroundColor: colors.background,
 	},
-	question: { fontSize: 16, fontWeight: "600", marginBottom: 12 },
+	center: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	title: {
+		fontSize: 22,
+		fontWeight: "600",
+		color: colors.textPrimary,
+		marginBottom: 20,
+	},
+	scroll: {
+		paddingBottom: 120, // deixa espaço para os botões
+	},
+	question: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: colors.textPrimary,
+		marginBottom: 16,
+	},
 	input: {
 		borderWidth: 1,
 		borderColor: colors.border,
-		borderRadius: 10,
+		borderRadius: 12,
 		padding: 12,
-		marginBottom: 14,
+		marginBottom: 16,
 		backgroundColor: colors.white,
 		fontSize: 15,
 	},
@@ -235,16 +302,31 @@ const styles = StyleSheet.create({
 		padding: 12,
 		borderWidth: 1,
 		borderColor: colors.border,
-		borderRadius: 10,
+		borderRadius: 12,
 		marginBottom: 10,
 		backgroundColor: colors.white,
 	},
 	optionSelected: {
 		backgroundColor: colors.primary,
 	},
-	navigation: {
+	optionText: {
+		fontSize: 15,
+		color: colors.textPrimary,
+	},
+	optionTextSelected: {
+		color: colors.white,
+		fontWeight: "600",
+	},
+	footer: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
+		padding: 16,
+		backgroundColor: colors.background,
+		borderTopWidth: 1,
+		borderColor: colors.border,
 		flexDirection: "row",
-		justifyContent: "space-between",
-		marginTop: 20,
+		gap: 8,
 	},
 });

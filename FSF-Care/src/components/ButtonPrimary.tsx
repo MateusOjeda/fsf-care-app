@@ -14,8 +14,10 @@ interface ButtonPrimaryProps {
 	onPress: (event: GestureResponderEvent) => void;
 	color?: string;
 	loading?: boolean;
+	disabled?: boolean;
 	children?: React.ReactNode; // ícone ou outro elemento
 	style?: object;
+	textStyle?: object;
 }
 
 const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
@@ -23,19 +25,24 @@ const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
 	onPress,
 	color = colors.primary,
 	loading = false,
+	disabled,
 	children,
 	style,
+	textStyle,
 }) => {
 	return (
 		<TouchableOpacity
 			style={[
 				styles.button,
-				{ backgroundColor: color, opacity: loading ? 0.6 : 1 },
+				{
+					backgroundColor: color,
+					opacity: loading || disabled ? 0.6 : 1,
+				},
 				style,
 			]}
 			onPress={onPress}
 			activeOpacity={0.8}
-			disabled={loading}
+			disabled={loading || disabled}
 		>
 			<View style={styles.content}>
 				{loading ? (
@@ -45,7 +52,9 @@ const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({
 						{children && (
 							<View style={styles.icon}>{children}</View>
 						)}
-						<Text style={styles.buttonText}>{title}</Text>
+						<Text style={[styles.buttonText, textStyle]}>
+							{title}
+						</Text>
 					</>
 				)}
 			</View>
