@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
 	View,
 	Text,
@@ -18,6 +18,7 @@ import { Patient } from "@/src/types";
 import {
 	getPatientById,
 	updatePatientById,
+	createPatient,
 } from "@/src/firebase/patientService";
 import { uploadImageAsync } from "@/src/firebase/storageService";
 import BackHeader from "@/src/components/BackHeader";
@@ -25,8 +26,11 @@ import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import DateInput from "@/src/components/DateInput";
+import { AuthContext } from "@/src/context/AuthContext";
 
 export default function PatientForm() {
+	const { user } = useContext(AuthContext);
+	const createdBy = user?.uid;
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
 
@@ -78,7 +82,7 @@ export default function PatientForm() {
 
 	const handlePickImage = async () => {
 		const result = await ImagePicker.launchImageLibraryAsync({
-			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			mediaTypes: "images",
 			allowsEditing: true,
 			aspect: [1, 1],
 			quality: 0.7,
@@ -90,18 +94,20 @@ export default function PatientForm() {
 	};
 
 	const handleSave = async () => {
-		if (!patient) return;
+		if (!name.trim()) {
+			Alert.alert("Aviso", "O nome é obrigatório.");
+			return;
+		}
+
 		setSaving(true);
 		try {
-			let photoURL = patient.photoURL;
-			let photoThumbnailURL = patient.photoThumbnailURL;
+			let photoURL = patient?.photoURL;
+			let photoThumbnailURL = patient?.photoThumbnailURL;
 
-			if (
-				photoURI &&
-				photoURI.startsWith("file://") &&
-				photoURI !== patient.photoURL
-			) {
-				const storagePath = `patients/${patient.id}.jpg`;
+			// Upload de imagem (caso tenha selecionado)
+			if (photoURI && photoURI.startsWith("file://")) {
+				const patientId = patient?.id || Date.now().toString();
+				const storagePath = `patients/${patientId}.jpg`;
 				photoURL = await uploadImageAsync(photoURI, storagePath);
 
 				const manipResult = await ImageManipulator.manipulateAsync(
@@ -109,28 +115,47 @@ export default function PatientForm() {
 					[{ resize: { width: 150, height: 150 } }],
 					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
 				);
+
 				photoThumbnailURL = await uploadImageAsync(
 					manipResult.uri,
-					`patients/${patient.id}_thumb.jpg`
+					`patients/${patientId}_thumb.jpg`
 				);
 			}
 
-			await updatePatientById(patient.id!, {
-				name,
-				birthDate: birthDate ?? undefined,
-				documentId,
-				phone,
-				address,
-				notes,
-				photoURL,
-				photoThumbnailURL,
-			});
+			if (id && patient) {
+				// Atualiza paciente existente
+				await updatePatientById(patient.id!, {
+					name,
+					birthDate: birthDate ?? undefined,
+					documentId,
+					phone,
+					address,
+					notes,
+					photoURL,
+					photoThumbnailURL,
+				});
+				// Alert.alert("Sucesso", "Paciente atualizado!");
+			} else {
+				// Cria novo paciente
+				await createPatient({
+					name,
+					birthDate: birthDate ?? undefined,
+					documentId,
+					phone,
+					address,
+					notes,
+					photoURL,
+					photoThumbnailURL,
+					createdBy: patient?.createdBy || createdBy,
+					createdAt: new Date(),
+				});
+				Alert.alert("Sucesso", "Paciente criado!");
+			}
 
-			Alert.alert("Sucesso", "Paciente atualizado!");
-			router.replace(id ? `/admin/patients/${id}` : `/admin/patients`);
+			router.replace("/admin/patients");
 		} catch (err) {
 			console.error(err);
-			Alert.alert("Erro", "Não foi possível atualizar o paciente");
+			Alert.alert("Erro", "Não foi possível salvar o paciente");
 		} finally {
 			setSaving(false);
 		}

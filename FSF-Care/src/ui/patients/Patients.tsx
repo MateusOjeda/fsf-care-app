@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
 	View,
 	Text,
@@ -15,8 +15,10 @@ import Avatar from "@/src/components/Avatar";
 import { differenceInYears } from "date-fns";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
+import { AuthContext } from "@/src/context/AuthContext";
 
 export default function PatientsScreen() {
+	const { user } = useContext(AuthContext);
 	const [patients, setPatients] = useState<{ id: string; data: Patient }[]>(
 		[]
 	);
@@ -24,6 +26,7 @@ export default function PatientsScreen() {
 		[]
 	);
 	const [search, setSearch] = useState("");
+	const [filter, setFilter] = useState<"all" | "mine">("all");
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
@@ -44,17 +47,28 @@ export default function PatientsScreen() {
 	}, []);
 
 	useEffect(() => {
-		if (!search.trim()) {
-			setFiltered(patients);
-			return;
+		let list = [...patients];
+
+		if (filter === "mine" && user) {
+			list = list.filter((p) => p.data.createdBy === user.uid);
 		}
-		const lower = search.toLowerCase();
-		setFiltered(
-			patients.filter((p) => p.data.name?.toLowerCase().includes(lower))
-		);
-	}, [search, patients]);
+
+		if (search.trim()) {
+			const lower = search.toLowerCase();
+			list = list.filter((p) =>
+				p.data.name?.toLowerCase().includes(lower)
+			);
+		}
+
+		setFiltered(list);
+	}, [search, patients, filter]);
 
 	const handleAdd = () => router.push("/patients/form");
+
+	const getAge = (birthDate?: Date) => {
+		if (!birthDate) return "-";
+		return differenceInYears(new Date(), new Date(birthDate)) + " anos";
+	};
 
 	if (loading) {
 		return (
@@ -65,14 +79,45 @@ export default function PatientsScreen() {
 		);
 	}
 
-	const getAge = (birthDate?: Date) => {
-		if (!birthDate) return "-";
-		return differenceInYears(new Date(), new Date(birthDate)) + " anos";
-	};
-
 	return (
 		<View style={styles.container}>
 			<Text style={styles.title}>Pacientes</Text>
+
+			{/* Filtro de "Todos" / "Meus" */}
+			<View style={styles.filterContainer}>
+				<TouchableOpacity
+					style={[
+						styles.filterButton,
+						filter === "all" && styles.filterActive,
+					]}
+					onPress={() => setFilter("all")}
+				>
+					<Text
+						style={[
+							styles.filterText,
+							filter === "all" && styles.filterTextActive,
+						]}
+					>
+						Todos
+					</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					style={[
+						styles.filterButton,
+						filter === "mine" && styles.filterActive,
+					]}
+					onPress={() => setFilter("mine")}
+				>
+					<Text
+						style={[
+							styles.filterText,
+							filter === "mine" && styles.filterTextActive,
+						]}
+					>
+						Meus pacientes
+					</Text>
+				</TouchableOpacity>
+			</View>
 
 			<TextInput
 				style={styles.search}
@@ -115,7 +160,6 @@ export default function PatientsScreen() {
 					setLoading(true);
 					const docs = await fetchPatients();
 					setPatients(docs);
-					setFiltered(docs);
 					setLoading(false);
 				}}
 			/>
@@ -138,6 +182,31 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: colors.textPrimary,
 		marginBottom: 12,
+	},
+	filterContainer: {
+		flexDirection: "row",
+		marginBottom: 12,
+		backgroundColor: colors.white,
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: colors.border,
+		overflow: "hidden",
+	},
+	filterButton: {
+		flex: 1,
+		alignItems: "center",
+		paddingVertical: 10,
+	},
+	filterActive: {
+		backgroundColor: colors.primary,
+	},
+	filterText: {
+		fontSize: 15,
+		color: colors.textSecondary,
+		fontWeight: "500",
+	},
+	filterTextActive: {
+		color: colors.white,
 	},
 	search: {
 		borderWidth: 1,
