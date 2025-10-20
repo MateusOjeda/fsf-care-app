@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import {
 	View,
 	Text,
@@ -16,6 +16,8 @@ import { differenceInYears } from "date-fns";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import { AuthContext } from "@/src/context/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import { useFocusSearch } from "@/src/context/FocusSearchContext";
 
 export default function PatientsScreen() {
 	const { user } = useContext(AuthContext);
@@ -34,6 +36,22 @@ export default function PatientsScreen() {
 
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
+
+	// Para setar o focus no input de busca quando necessário
+	const { shouldFocusSearch, setShouldFocusSearch } = useFocusSearch();
+	const searchInputRef = useRef<TextInput>(null);
+	useFocusEffect(
+		React.useCallback(() => {
+			if (shouldFocusSearch) {
+				console.log("Focando no input de busca...");
+				const timer = setTimeout(() => {
+					searchInputRef.current?.focus();
+					setShouldFocusSearch(false);
+				}, 300);
+				return () => clearTimeout(timer);
+			}
+		}, [shouldFocusSearch])
+	);
 
 	useEffect(() => {
 		const fetch = async () => {
@@ -129,6 +147,7 @@ export default function PatientsScreen() {
 			</View>
 
 			<TextInput
+				ref={searchInputRef}
 				style={styles.search}
 				placeholder="Buscar por nome..."
 				value={search}

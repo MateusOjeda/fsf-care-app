@@ -80,6 +80,9 @@ export default function RegisterScreen() {
 
 					{/* Formulário */}
 					<View style={styles.form}>
+						<Text style={styles.inputLabel}>
+							Insira seu e-mail:
+						</Text>
 						<TextInput
 							style={styles.input}
 							placeholder="E-mail"
@@ -89,6 +92,7 @@ export default function RegisterScreen() {
 							value={email}
 							onChangeText={setEmail}
 						/>
+						<Text style={styles.inputLabel}>Defina uma senha:</Text>
 						<TextInput
 							style={styles.input}
 							placeholder="Senha"
@@ -172,5 +176,11 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: colors.textPrimary,
 		lineHeight: 22,
+	},
+	inputLabel: {
+		fontSize: 15,
+		color: colors.textSecondary,
+		marginBottom: 4,
+		marginLeft: 2,
 	},
 });

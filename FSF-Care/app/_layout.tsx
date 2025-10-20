@@ -2,6 +2,8 @@ import { Slot, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { AuthProvider, AuthContext } from "../src/context/AuthContext";
 import LogRouteExpo from "@/src/utils/LogRouteExpo";
+import { StatusBar } from "react-native";
+import { FocusSearchProvider } from "@/src/context/FocusSearchContext";
 
 function RootStack() {
 	const [mounted, setMounted] = useState(false);
@@ -53,8 +55,14 @@ function RootStack() {
 export default function RootLayout() {
 	return (
 		<AuthProvider>
-			<RootStack />
-			<LogRouteExpo />
+			<FocusSearchProvider>
+				<StatusBar
+					barStyle="dark-content" // ícones escuros (hora, wifi, bateria)
+					backgroundColor="#F2F2F2" // cor de fundo da barra
+				/>
+				<RootStack />
+				<LogRouteExpo />
+			</FocusSearchProvider>
 		</AuthProvider>
 	);
 }

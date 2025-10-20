@@ -15,9 +15,11 @@ import { AuthContext } from "@/src/context/AuthContext";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import colors from "@/src/theme/colors";
+import { useFocusSearch } from "@/src/context/FocusSearchContext";
 
 export default function HomeComponent() {
 	const { user } = useContext(AuthContext);
+	const { setShouldFocusSearch } = useFocusSearch();
 	const router = useRouter();
 
 	const recentAppointments = [
@@ -94,12 +96,15 @@ export default function HomeComponent() {
 				<ActionButton
 					icon="search-outline"
 					label="Encontrar paciente"
-					onPress={() =>
+					onPress={() => {
+						setShouldFocusSearch(true);
 						router.push({
 							pathname: "/admin/patients",
-							params: { initialFilter: "all" },
-						})
-					}
+							params: {
+								initialFilter: "all",
+							},
+						});
+					}}
 				/>
 				<ActionButton
 					icon="people-outline"
@@ -119,7 +124,7 @@ export default function HomeComponent() {
 				<ActionButton
 					icon="person-circle-outline"
 					label="Meu perfil"
-					onPress={() => router.push("/profile/form")}
+					onPress={() => router.push("/admin/profile")}
 				/>
 			</View>
 

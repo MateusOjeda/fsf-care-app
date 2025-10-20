@@ -15,6 +15,7 @@ import colors from "@/src/theme/colors";
 import { Patient, CareSheetAnswers, Option } from "@/src/types";
 import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import { saveCareSheet } from "@/src/firebase/careSheetService";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type CareSheetModalProps = {
 	visible: boolean;
@@ -49,24 +50,30 @@ export default function CareSheetModal({
 		if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
 	};
 
-	const handleCancel = () => {
-		Alert.alert("Tem certeza?", " Todas as respostas serão apagadas.", [
-			{
-				text: "Não",
-				style: "cancel",
-			},
-			{
-				text: "Sim, cancelar",
-				style: "destructive",
-				onPress: () => {
-					setStarted(false);
-					setCurrentIndex(0);
-					setAnswers({});
-					onClose();
-					if (onRefresh) onRefresh();
+	const handleCancel = ({ confirmBeforeCancel = true } = {}) => {
+		const handle = () => {
+			setStarted(false);
+			setCurrentIndex(0);
+			setAnswers({});
+			onClose();
+			if (onRefresh) onRefresh();
+		};
+
+		if (confirmBeforeCancel) {
+			Alert.alert("Tem certeza?", " Todas as respostas serão apagadas.", [
+				{
+					text: "Não",
+					style: "cancel",
 				},
-			},
-		]);
+				{
+					text: "Sim, cancelar",
+					style: "destructive",
+					onPress: handle,
+				},
+			]);
+		} else {
+			handle();
+		}
 	};
 
 	const handleSave = async () => {
@@ -74,7 +81,7 @@ export default function CareSheetModal({
 		setSaving(true);
 		try {
 			await saveCareSheet(patient, answers, version);
-			handleCancel();
+			handleCancel({ confirmBeforeCancel: false });
 		} catch (error) {
 			console.error("Erro ao salvar CareSheet:", error);
 			alert("Não foi possível salvar a ficha. Tente novamente.");
@@ -190,74 +197,78 @@ export default function CareSheetModal({
 
 	return (
 		<Modal visible={visible} animationType="slide">
-			<View style={styles.container}>
-				{!started ? (
-					<View style={styles.center}>
-						<Text style={styles.title}>Ficha de Cuidados</Text>
-						<ButtonPrimary
-							title="Iniciar"
-							onPress={() => setStarted(true)}
-							style={{ marginBottom: 10 }}
-						/>
-						<ButtonPrimary
-							title="Fechar"
-							onPress={onClose}
-							style={{ backgroundColor: colors.danger }}
-						/>
-					</View>
-				) : (
-					<>
-						<ScrollView
-							contentContainerStyle={styles.scroll}
-							keyboardShouldPersistTaps="handled"
-						>
-							<Text style={styles.question}>
-								{currentQuestion.pergunta_pt}
-							</Text>
-
-							{renderQuestionInput()}
-						</ScrollView>
-
-						{/* Botões fixos no rodapé */}
-						<View style={styles.footer}>
+			<SafeAreaView style={{ flex: 1 }}>
+				<View style={styles.container}>
+					{!started ? (
+						<View style={styles.center}>
+							<Text style={styles.title}>Ficha de Cuidados</Text>
 							<ButtonPrimary
-								title="Cancelar"
-								onPress={handleCancel}
-								style={{
-									backgroundColor: colors.danger,
-									flex: 1,
-								}}
+								title="Iniciar"
+								onPress={() => setStarted(true)}
+								style={{ marginBottom: 10 }}
 							/>
-
 							<ButtonPrimary
-								title="Anterior"
-								onPress={handlePrev}
-								style={{
-									backgroundColor: colors.cardBackground,
-									flex: 1,
-								}}
-								textStyle={{ color: colors.textPrimary }}
-								disabled={currentIndex === 0}
+								title="Fechar"
+								onPress={onClose}
+								style={{ backgroundColor: colors.danger }}
 							/>
-
-							{currentIndex + 1 < questionKeys.length ? (
-								<ButtonPrimary
-									title="Próximo"
-									onPress={handleNext}
-									style={{ flex: 1 }}
-								/>
-							) : (
-								<ButtonPrimary
-									title={saving ? "Salvando..." : "Salvar"}
-									onPress={handleSave}
-									loading={saving}
-									style={{ flex: 1 }}
-								/>
-							)}
 						</View>
-					</>
-				)}
-			</View>
+					) : (
+						<>
+							<ScrollView
+								contentContainerStyle={styles.scroll}
+								keyboardShouldPersistTaps="handled"
+							>
+								<Text style={styles.question}>
+									{currentQuestion.pergunta_pt}
+								</Text>
+
+								{renderQuestionInput()}
+							</ScrollView>
+
+							{/* Botões fixos no rodapé */}
+							<View style={styles.footer}>
+								<ButtonPrimary
+									title="Cancelar"
+									onPress={() => handleCancel()}
+									style={{
+										backgroundColor: colors.danger,
+										flex: 1,
+									}}
+								/>
+
+								<ButtonPrimary
+									title="Anterior"
+									onPress={handlePrev}
+									style={{
+										backgroundColor: colors.cardBackground,
+										flex: 1,
+									}}
+									textStyle={{ color: colors.textPrimary }}
+									disabled={currentIndex === 0}
+								/>
+
+								{currentIndex + 1 < questionKeys.length ? (
+									<ButtonPrimary
+										title="Próximo"
+										onPress={handleNext}
+										style={{ flex: 1 }}
+									/>
+								) : (
+									<ButtonPrimary
+										title={
+											saving ? "Salvando..." : "Salvar"
+										}
+										onPress={handleSave}
+										loading={saving}
+										style={{ flex: 1 }}
+									/>
+								)}
+							</View>
+						</>
+					)}
+				</View>
+			</SafeAreaView>
 		</Modal>
 	);
 }
@@ -266,7 +277,7 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		paddingHorizontal: 20,
-		paddingTop: 20,
+		paddingTop: 30,
 		backgroundColor: colors.background,
 	},
 	center: {
