@@ -1,3 +1,5 @@
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -6,7 +8,6 @@ import {
 	Alert,
 	ActivityIndicator,
 	Text,
-	Button,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import BackHeader from "@/src/components/BackHeader";
@@ -19,7 +20,9 @@ import {
 import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 
-export default function CareSheetComponent() {
+export default function PatientsScreen() {
+	const insets = useSafeAreaInsets();
+
 	const { id: careSheetId, patientId } = useLocalSearchParams<{
 		id: string;
 		patientId: string;
@@ -68,7 +71,7 @@ export default function CareSheetComponent() {
 						try {
 							await deleteCareSheet(patientId, careSheetId);
 							// Alert.alert("Sucesso", "Ficha deletada");
-							router.push(`/admin/patients/${patientId}`);
+							router.push(`/patients/${patientId}`);
 						} catch (err) {
 							console.error(err);
 							Alert.alert(
@@ -98,56 +101,72 @@ export default function CareSheetComponent() {
 	);
 
 	return (
-		<View style={styles.container}>
-			<BackHeader
-				title="Ficha de Cuidados"
-				onPress={() => router.back()}
-			/>
-			<ScrollView contentContainerStyle={styles.containerScroll}>
-				{Object.entries(careSheet.answers).map(
-					([questionId, answer]) => {
-						const question = questionSet[questionId];
-						const questionText =
-							question?.pergunta_pt || `Pergunta ${questionId}`;
+		<SafeAreaView
+			style={{
+				flex: 1,
+				paddingBottom: -insets.bottom,
+			}}
+		>
+			<View style={styles.container}>
+				<BackHeader
+					title="Ficha de Cuidados"
+					onPress={() => router.back()}
+				/>
+				<ScrollView contentContainerStyle={styles.containerScroll}>
+					{Object.entries(careSheet.answers).map(
+						([questionId, answer]) => {
+							const question = questionSet[questionId];
+							const questionText =
+								question?.pergunta_pt ||
+								`Pergunta ${questionId}`;
 
-						return (
-							<View key={questionId} style={styles.card}>
-								<Text style={styles.question}>
-									{questionText}
-								</Text>
-								{typeof answer === "object" &&
-								!Array.isArray(answer) ? (
-									Object.entries(answer).map(([key, val]) => (
-										<Text key={key} style={styles.answer}>
-											{key}: {String(val)}
-										</Text>
-									))
-								) : Array.isArray(answer) ? (
-									answer.map((val, idx) => (
-										<Text key={idx} style={styles.answer}>
-											- {String(val)}
-										</Text>
-									))
-								) : (
-									<Text style={styles.answer}>
-										{String(answer)}
+							return (
+								<View key={questionId} style={styles.card}>
+									<Text style={styles.question}>
+										{questionText}
 									</Text>
-								)}
-							</View>
-						);
-					}
-				)}
+									{typeof answer === "object" &&
+									!Array.isArray(answer) ? (
+										Object.entries(answer).map(
+											([key, val]) => (
+												<Text
+													key={key}
+													style={styles.answer}
+												>
+													{key}: {String(val)}
+												</Text>
+											)
+										)
+									) : Array.isArray(answer) ? (
+										answer.map((val, idx) => (
+											<Text
+												key={idx}
+												style={styles.answer}
+											>
+												- {String(val)}
+											</Text>
+										))
+									) : (
+										<Text style={styles.answer}>
+											{String(answer)}
+										</Text>
+									)}
+								</View>
+							);
+						}
+					)}
 
-				<View style={styles.buttonWrapper}>
-					<ButtonPrimary
-						title={deleting ? "Deletando..." : "Deletar ficha"}
-						onPress={handleDelete}
-						color={colors.danger}
-						loading={deleting}
-					/>
-				</View>
-			</ScrollView>
-		</View>
+					<View style={styles.buttonWrapper}>
+						<ButtonPrimary
+							title={deleting ? "Deletando..." : "Deletar ficha"}
+							onPress={handleDelete}
+							color={colors.danger}
+							loading={deleting}
+						/>
+					</View>
+				</ScrollView>
+			</View>
+		</SafeAreaView>
 	);
 }
 

@@ -139,7 +139,7 @@ export default function PatientForm() {
 					photoThumbnailURL,
 					gender: gender ?? undefined,
 				});
-				router.push(`/admin/patients/${patient.id}`);
+				router.push(`/patients/${patient.id}`);
 			} else {
 				const newPatientId = await createPatient({
 					name,
@@ -153,7 +153,7 @@ export default function PatientForm() {
 					createdBy,
 					createdAt: new Date(),
 				});
-				router.push(`/admin/patients/${newPatientId}`);
+				router.push(`/patients/${newPatientId}`);
 			}
 		} catch (err) {
 			Alert.alert("Erro", "Não foi possível salvar o paciente");
@@ -173,7 +173,7 @@ export default function PatientForm() {
 					try {
 						await deletePatient(id);
 						Alert.alert("Sucesso", "Paciente deletado!");
-						router.replace("/admin/patients");
+						router.replace("/patients");
 					} catch {
 						Alert.alert("Erro", "Não foi possível deletar");
 					}
@@ -196,9 +196,7 @@ export default function PatientForm() {
 			<BackHeader
 				title={id ? "Editar Paciente" : "Novo Paciente"}
 				onPress={() =>
-					router.replace(
-						id ? `/admin/patients/${id}` : `/admin/patients`
-					)
+					router.replace(id ? `/patients/${id}` : `/patients`)
 				}
 			/>
 

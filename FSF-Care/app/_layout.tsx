@@ -7,7 +7,7 @@ import { FocusSearchProvider } from "@/src/context/FocusSearchContext";
 
 function RootStack() {
 	const [mounted, setMounted] = useState(false);
-	const { user, loading, logout } = useContext(AuthContext);
+	const { user, loading } = useContext(AuthContext);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -29,23 +29,10 @@ function RootStack() {
 			(user.expiresAt && new Date(user.expiresAt) < new Date())
 		) {
 			router.replace("/auth/access-code");
+		} else if (user.role) {
+			router.replace("/home");
 		} else {
-			switch (user.role) {
-				case "admin":
-					router.replace("/admin/home");
-					break;
-				// case "medico":
-				// 	router.replace("/medico/home");
-				// 	break;
-				// case "psicossocial":
-				// 	router.replace("/psicossocial/home");
-				// 	break;
-				// case "geral":
-				// 	router.replace("/geral/home");
-				// 	break;
-				default:
-					router.replace("/auth/access-code");
-			}
+			router.replace("/auth/access-code");
 		}
 	}, [user, loading]);
 

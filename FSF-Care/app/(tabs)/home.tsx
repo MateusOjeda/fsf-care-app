@@ -1,4 +1,5 @@
-// src/screens/HomeScreen.tsx
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useContext } from "react";
 import {
 	View,
@@ -17,10 +18,12 @@ import { ptBR } from "date-fns/locale";
 import colors from "@/src/theme/colors";
 import { useFocusSearch } from "@/src/context/FocusSearchContext";
 
-export default function HomeComponent() {
+export default function HomeScreen() {
 	const { user } = useContext(AuthContext);
 	const { setShouldFocusSearch } = useFocusSearch();
 	const router = useRouter();
+
+	const insets = useSafeAreaInsets();
 
 	const recentAppointments = [
 		{
@@ -51,103 +54,111 @@ export default function HomeComponent() {
 	});
 
 	return (
-		<View style={styles.container}>
-			{/* Saudação */}
-			<View style={styles.header}>
-				<View>
-					<Text style={styles.greeting}>
-						Olá,{" "}
-						{user?.profile?.name?.split(" ")[0] || "voluntário(a)"}
-					</Text>
-					<Text style={styles.date}>Hoje é {today}</Text>
+		<SafeAreaView
+			style={{
+				flex: 1,
+				paddingBottom: -insets.bottom,
+			}}
+		>
+			<View style={styles.container}>
+				{/* Saudação */}
+				<View style={styles.header}>
+					<View>
+						<Text style={styles.greeting}>
+							Olá,{" "}
+							{user?.profile?.name?.split(" ")[0] ||
+								"voluntário(a)"}
+						</Text>
+						<Text style={styles.date}>Hoje é {today}</Text>
+					</View>
+					<Ionicons
+						name="logo-instagram" // ou "logo-facebook", "logo-twitter"
+						size={26}
+						color={colors.primary}
+						onPress={() =>
+							Linking.openURL(
+								"https://www.instagram.com/fraternidadesemfronteiras"
+							)
+						}
+						style={{ marginLeft: 10 }}
+					/>
 				</View>
-				<Ionicons
-					name="logo-instagram" // ou "logo-facebook", "logo-twitter"
-					size={26}
-					color={colors.primary}
+
+				{/* Imagem de topo com link */}
+				<TouchableOpacity
+					style={styles.topImageContainer}
 					onPress={() =>
 						Linking.openURL(
-							"https://www.instagram.com/fraternidadesemfronteiras"
+							"https://www.fraternidadesemfronteiras.org.br/apadrinhamento"
 						)
 					}
-					style={{ marginLeft: 10 }}
-				/>
-			</View>
+					activeOpacity={0.85}
+				>
+					<Image
+						source={require("@/assets/images/apadrinhareamar2024.jpg")}
+						style={styles.topImage}
+						resizeMode="cover"
+					/>
+				</TouchableOpacity>
 
-			{/* Imagem de topo com link */}
-			<TouchableOpacity
-				style={styles.topImageContainer}
-				onPress={() =>
-					Linking.openURL(
-						"https://www.fraternidadesemfronteiras.org.br/apadrinhamento"
-					)
-				}
-				activeOpacity={0.85}
-			>
-				<Image
-					source={require("@/assets/images/apadrinhareamar2024.jpg")}
-					style={styles.topImage}
-					resizeMode="cover"
-				/>
-			</TouchableOpacity>
+				{/* Ações principais (grid 2x2) */}
+				<View style={styles.actionGrid}>
+					<ActionButton
+						icon="search-outline"
+						label="Encontrar paciente"
+						onPress={() => {
+							setShouldFocusSearch(true);
+							router.push({
+								pathname: "/patients",
+								params: {
+									initialFilter: "all",
+								},
+							});
+						}}
+					/>
+					<ActionButton
+						icon="people-outline"
+						label="Meus pacientes"
+						onPress={() =>
+							router.push({
+								pathname: "/patients",
+								params: { initialFilter: "mine" },
+							})
+						}
+					/>
+					<ActionButton
+						icon="person-add-outline"
+						label="Adicionar paciente"
+						onPress={() => router.push("/form/patients")}
+					/>
+					<ActionButton
+						icon="person-circle-outline"
+						label="Meu perfil"
+						onPress={() => router.push("/profile")}
+					/>
+				</View>
 
-			{/* Ações principais (grid 2x2) */}
-			<View style={styles.actionGrid}>
-				<ActionButton
-					icon="search-outline"
-					label="Encontrar paciente"
-					onPress={() => {
-						setShouldFocusSearch(true);
-						router.push({
-							pathname: "/admin/patients",
-							params: {
-								initialFilter: "all",
-							},
-						});
-					}}
-				/>
-				<ActionButton
-					icon="people-outline"
-					label="Meus pacientes"
-					onPress={() =>
-						router.push({
-							pathname: "/admin/patients",
-							params: { initialFilter: "mine" },
-						})
-					}
-				/>
-				<ActionButton
-					icon="person-add-outline"
-					label="Adicionar paciente"
-					onPress={() => router.push("/patients/form")}
-				/>
-				<ActionButton
-					icon="person-circle-outline"
-					label="Meu perfil"
-					onPress={() => router.push("/admin/profile")}
-				/>
-			</View>
-
-			{/* Lista de atendimentos recentes */}
-			<Text style={styles.sectionTitle}>Atendimentos recentes</Text>
-			<FlatList
-				data={recentAppointments}
-				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
-					<View style={styles.listItem}>
-						<Image
-							source={{ uri: item.avatar }}
-							style={styles.listAvatar}
-						/>
-						<View style={{ flex: 1 }}>
-							<Text style={styles.listName}>{item.name}</Text>
-							<Text style={styles.listDesc}>{item.desc}</Text>
+				{/* Lista de atendimentos recentes */}
+				<Text style={styles.sectionTitle}>Atendimentos recentes</Text>
+				<FlatList
+					data={recentAppointments}
+					keyExtractor={(item) => item.id}
+					renderItem={({ item }) => (
+						<View style={styles.listItem}>
+							<Image
+								source={{ uri: item.avatar }}
+								style={styles.listAvatar}
+							/>
+							<View style={{ flex: 1 }}>
+								<Text style={styles.listName}>{item.name}</Text>
+								<Text style={styles.listDesc}>{item.desc}</Text>
+							</View>
+							<Text style={styles.listDate}>{item.date}</Text>
 						</View>
-						<Text style={styles.listDate}>{item.date}</Text>
-					</View>
-				)}
-			/>
-		</View>
+					)}
+				/>
+			</View>
+		</SafeAreaView>
 	);
 }
 

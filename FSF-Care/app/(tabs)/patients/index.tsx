@@ -1,3 +1,5 @@
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useEffect, useState, useContext, useRef } from "react";
 import {
 	View,
@@ -20,6 +22,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useFocusSearch } from "@/src/context/FocusSearchContext";
 
 export default function PatientsScreen() {
+	const insets = useSafeAreaInsets();
+
 	const { user } = useContext(AuthContext);
 	const { initialFilter } = useLocalSearchParams<{
 		initialFilter?: "all" | "mine";
@@ -90,7 +94,7 @@ export default function PatientsScreen() {
 		initialFilter && setFilter(initialFilter);
 	}, [initialFilter]);
 
-	const handleAdd = () => router.push("/patients/form");
+	const handleAdd = () => router.push("/form/patients");
 
 	const getAge = (birthDate?: Date) => {
 		if (!birthDate) return "-";
@@ -107,93 +111,98 @@ export default function PatientsScreen() {
 	}
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.title}>Pacientes</Text>
+		<SafeAreaView
+			style={{
+				flex: 1,
+				paddingBottom: -insets.bottom,
+			}}
+		>
+			<View style={styles.container}>
+				<Text style={styles.title}>Pacientes</Text>
 
-			{/* Filtro de "Todos" / "Meus" */}
-			<View style={styles.filterContainer}>
-				<TouchableOpacity
-					style={[
-						styles.filterButton,
-						filter === "all" && styles.filterActive,
-					]}
-					onPress={() => setFilter("all")}
-				>
-					<Text
-						style={[
-							styles.filterText,
-							filter === "all" && styles.filterTextActive,
-						]}
-					>
-						Todos
-					</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={[
-						styles.filterButton,
-						filter === "mine" && styles.filterActive,
-					]}
-					onPress={() => setFilter("mine")}
-				>
-					<Text
-						style={[
-							styles.filterText,
-							filter === "mine" && styles.filterTextActive,
-						]}
-					>
-						Meus pacientes
-					</Text>
-				</TouchableOpacity>
-			</View>
-
-			<TextInput
-				ref={searchInputRef}
-				style={styles.search}
-				placeholder="Buscar por nome..."
-				value={search}
-				onChangeText={setSearch}
-				placeholderTextColor={colors.textSecondary}
-			/>
-
-			<FlatList
-				data={filtered}
-				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
+				{/* Filtro de "Todos" / "Meus" */}
+				<View style={styles.filterContainer}>
 					<TouchableOpacity
-						onPress={() =>
-							router.push(`/admin/patients/${item.id}`)
-						}
-						activeOpacity={0.7}
+						style={[
+							styles.filterButton,
+							filter === "all" && styles.filterActive,
+						]}
+						onPress={() => setFilter("all")}
 					>
-						<View style={styles.item}>
-							<Avatar
-								photoURL={item.data.photoThumbnailURL}
-								size={60}
-								borderWidth={1}
-								borderColor={colors.border}
-							/>
-							<View style={styles.info}>
-								<Text style={styles.name}>
-									{item.data.name}
-								</Text>
-								<Text style={styles.sub}>
-									{getAge(item.data.birthDate)}
-								</Text>
-							</View>
-						</View>
+						<Text
+							style={[
+								styles.filterText,
+								filter === "all" && styles.filterTextActive,
+							]}
+						>
+							Todos
+						</Text>
 					</TouchableOpacity>
-				)}
-				refreshing={loading}
-				onRefresh={async () => {
-					setLoading(true);
-					const docs = await fetchPatients();
-					setPatients(docs);
-					setLoading(false);
-				}}
-			/>
+					<TouchableOpacity
+						style={[
+							styles.filterButton,
+							filter === "mine" && styles.filterActive,
+						]}
+						onPress={() => setFilter("mine")}
+					>
+						<Text
+							style={[
+								styles.filterText,
+								filter === "mine" && styles.filterTextActive,
+							]}
+						>
+							Meus pacientes
+						</Text>
+					</TouchableOpacity>
+				</View>
 
-			<ButtonPrimary title="Adicionar Paciente" onPress={handleAdd} />
-		</View>
+				<TextInput
+					ref={searchInputRef}
+					style={styles.search}
+					placeholder="Buscar por nome..."
+					value={search}
+					onChangeText={setSearch}
+					placeholderTextColor={colors.textSecondary}
+				/>
+
+				<FlatList
+					data={filtered}
+					keyExtractor={(item) => item.id}
+					renderItem={({ item }) => (
+						<TouchableOpacity
+							onPress={() => router.push(`/patients/${item.id}`)}
+							activeOpacity={0.7}
+						>
+							<View style={styles.item}>
+								<Avatar
+									photoURL={item.data.photoThumbnailURL}
+									size={60}
+									borderWidth={1}
+									borderColor={colors.border}
+								/>
+								<View style={styles.info}>
+									<Text style={styles.name}>
+										{item.data.name}
+									</Text>
+									<Text style={styles.sub}>
+										{getAge(item.data.birthDate)}
+									</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+					)}
+					refreshing={loading}
+					onRefresh={async () => {
+						setLoading(true);
+						const docs = await fetchPatients();
+						setPatients(docs);
+						setLoading(false);
+					}}
+				/>
+
+				<ButtonPrimary title="Adicionar Paciente" onPress={handleAdd} />
+			</View>
+		</SafeAreaView>
 	);
 }
 

@@ -128,7 +128,7 @@ export default function ProfileScreen() {
 		<SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
 			<BackHeader
 				title="Editar Perfil"
-				onPress={() => router.replace(`/admin/profile`)}
+				onPress={() => router.replace(`/profile`)}
 			/>
 
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
