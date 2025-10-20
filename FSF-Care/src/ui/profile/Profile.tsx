@@ -23,7 +23,11 @@ export default function ProfileComponent() {
 		>
 			{/* Foto de perfil */}
 			<View style={styles.photoContainer}>
-				<Avatar photoURL={user?.photoURL} size={200} />
+				<Avatar
+					photoURL={user?.photoURL}
+					size={200}
+					showFullSize={true}
+				/>
 			</View>
 
 			{/* Nome */}

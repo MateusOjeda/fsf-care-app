@@ -86,7 +86,11 @@ export default function PatientDetails() {
 			<ScrollView contentContainerStyle={styles.containerScroll}>
 				{/* Cabeçalho */}
 				<View style={styles.header}>
-					<Avatar photoURL={patient.photoThumbnailURL} size={120} />
+					<Avatar
+						photoURL={patient.photoThumbnailURL}
+						size={120}
+						showFullSize={true}
+					/>
 					<Text style={styles.name}>{patient.name}</Text>
 					<Text style={styles.age}>
 						{patient.birthDate
