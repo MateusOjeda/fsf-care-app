@@ -35,6 +35,7 @@ export default function ProfileScreen() {
 				<View style={styles.photoContainer}>
 					<Avatar
 						photoURL={user?.photoURL}
+						photoFullSizeURL={user?.photoURL}
 						size={200}
 						showFullSize={true}
 					/>

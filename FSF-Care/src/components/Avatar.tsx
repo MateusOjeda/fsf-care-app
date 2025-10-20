@@ -20,6 +20,7 @@ type AvatarProps = {
 	editable?: boolean;
 	onPress?: () => void;
 	showFullSize?: boolean;
+	photoFullSizeURL?: string;
 };
 
 export default function Avatar({
@@ -30,6 +31,7 @@ export default function Avatar({
 	editable = false,
 	onPress,
 	showFullSize = false,
+	photoFullSizeURL,
 }: AvatarProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
@@ -131,9 +133,9 @@ export default function Avatar({
 						onPress={() => setShowModal(false)}
 					/>
 					<View style={styles.modalContent}>
-						{photoURL && (
+						{photoFullSizeURL && (
 							<Image
-								source={{ uri: photoURL }}
+								source={{ uri: photoFullSizeURL }}
 								style={styles.fullImage}
 								resizeMode="contain"
 							/>

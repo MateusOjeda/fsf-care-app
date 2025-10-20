@@ -93,7 +93,8 @@ export default function PatientsDetailsScreen() {
 					{/* Cabeçalho */}
 					<View style={styles.header}>
 						<Avatar
-							photoURL={patient.photoURL}
+							photoURL={patient.photoThumbnailURL}
+							photoFullSizeURL={patient.photoURL}
 							size={160}
 							showFullSize={true}
 						/>
