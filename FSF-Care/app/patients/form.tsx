@@ -3,16 +3,18 @@ import {
 	View,
 	Text,
 	TextInput,
-	ScrollView,
 	ActivityIndicator,
 	StyleSheet,
 	Alert,
+	Keyboard,
+	TouchableWithoutFeedback,
+	Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import { GenderType, Patient } from "@/src/types";
 import {
@@ -41,7 +43,7 @@ export default function PatientForm() {
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 
-	// Form states
+	// Estados do formulário
 	const [name, setName] = useState("");
 	const [birthDate, setBirthDate] = useState<Date | null>(null);
 	const [documentId, setDocumentId] = useState("");
@@ -75,7 +77,6 @@ export default function PatientForm() {
 				setNotes(data.notes || "");
 				setPhotoURI(data.photoURL);
 			} catch (err) {
-				console.error(err);
 				Alert.alert("Erro", "Não foi possível carregar o paciente");
 			} finally {
 				setLoading(false);
@@ -109,7 +110,6 @@ export default function PatientForm() {
 			let photoURL = patient?.photoURL;
 			let photoThumbnailURL = patient?.photoThumbnailURL;
 
-			// Upload de imagem (caso tenha selecionado)
 			if (photoURI && photoURI.startsWith("file://")) {
 				const patientId = patient?.id || Date.now().toString();
 				const storagePath = `patients/${patientId}.jpg`;
@@ -128,7 +128,6 @@ export default function PatientForm() {
 			}
 
 			if (id && patient) {
-				// Atualiza paciente existente
 				await updatePatientById(patient.id!, {
 					name,
 					birthDate: birthDate ?? undefined,
@@ -140,10 +139,8 @@ export default function PatientForm() {
 					photoThumbnailURL,
 					gender: gender ?? undefined,
 				});
-				// Alert.alert("Sucesso", "Paciente atualizado!");
 				router.push(`/admin/patients/${patient.id}`);
 			} else {
-				// Cria novo paciente
 				const newPatientId = await createPatient({
 					name,
 					birthDate: birthDate ?? undefined,
@@ -153,14 +150,12 @@ export default function PatientForm() {
 					notes,
 					photoURL,
 					photoThumbnailURL,
-					createdBy: patient?.createdBy || createdBy,
+					createdBy,
 					createdAt: new Date(),
 				});
-				// Alert.alert("Sucesso", "Paciente criado!");
 				router.push(`/admin/patients/${newPatientId}`);
 			}
 		} catch (err) {
-			console.error(err);
 			Alert.alert("Erro", "Não foi possível salvar o paciente");
 		} finally {
 			setSaving(false);
@@ -169,30 +164,22 @@ export default function PatientForm() {
 
 	const handleDelete = () => {
 		if (!id) return;
-		Alert.alert(
-			"Excluir Paciente",
-			"Tem certeza que deseja excluir este paciente?",
-			[
-				{ text: "Cancelar", style: "cancel" },
-				{
-					text: "Excluir",
-					style: "destructive",
-					onPress: async () => {
-						try {
-							await deletePatient(id);
-							Alert.alert("Sucesso", "Paciente deletado!");
-							router.replace("/admin/patients");
-						} catch (err) {
-							console.error(err);
-							Alert.alert(
-								"Erro",
-								"Não foi possível deletar o paciente"
-							);
-						}
-					},
+		Alert.alert("Excluir Paciente", "Tem certeza que deseja excluir?", [
+			{ text: "Cancelar", style: "cancel" },
+			{
+				text: "Excluir",
+				style: "destructive",
+				onPress: async () => {
+					try {
+						await deletePatient(id);
+						Alert.alert("Sucesso", "Paciente deletado!");
+						router.replace("/admin/patients");
+					} catch {
+						Alert.alert("Erro", "Não foi possível deletar");
+					}
 				},
-			]
-		);
+			},
+		]);
 	};
 
 	if (loading) {
@@ -215,104 +202,120 @@ export default function PatientForm() {
 				}
 			/>
 
-			<ScrollView
-				contentContainerStyle={styles.container}
-				showsVerticalScrollIndicator={false}
-			>
-				<Avatar
-					photoURL={photoURI}
-					size={120}
-					editable
-					onPress={handlePickImage}
-				/>
+			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+				<KeyboardAwareScrollView
+					contentContainerStyle={styles.container}
+					enableOnAndroid={true}
+					keyboardShouldPersistTaps="handled"
+					extraScrollHeight={Platform.OS === "ios" ? 40 : 0}
+					showsVerticalScrollIndicator={false}
+				>
+					<Avatar
+						photoURL={photoURI}
+						size={160}
+						editable
+						onPress={handlePickImage}
+					/>
 
-				<View style={styles.formCard}>
-					<Text style={styles.label}>Nome</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Nome"
-						value={name}
-						onChangeText={setName}
-						placeholderTextColor={colors.textSecondary}
-					/>
-					<Text style={styles.label}>Data de nascimento</Text>
-					<DateInput
-						value={birthDate}
-						onChange={setBirthDate}
-						placeholder="Data de nascimento"
-						formatString="dd/MM/yyyy"
-						maximumDate={new Date()}
-						style={styles.input}
-					/>
-					<Text style={styles.label}>Gênero</Text>
-					<View style={styles.pickerContainer}>
-						<Picker
-							selectedValue={gender ?? "other"}
-							onValueChange={(value) =>
-								setGender(value as GenderType)
-							}
-						>
-							{Object.entries(GENDER_LABELS).map(
-								([key, label]) => (
-									<Picker.Item
-										key={key}
-										label={label}
-										value={key}
-									/>
-								)
-							)}
-						</Picker>
+					<View style={styles.formCard}>
+						<Text style={styles.label}>Nome</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Nome"
+							value={name}
+							onChangeText={setName}
+							placeholderTextColor={colors.textSecondary}
+						/>
+
+						<Text style={styles.label}>Data de nascimento</Text>
+						<DateInput
+							value={birthDate}
+							onChange={setBirthDate}
+							placeholder="Data de nascimento"
+							formatString="dd/MM/yyyy"
+							maximumDate={new Date()}
+							style={styles.input}
+						/>
+
+						<Text style={styles.label}>Gênero</Text>
+						<View style={styles.pickerContainer}>
+							<Picker
+								selectedValue={gender ?? "other"}
+								onValueChange={(value) =>
+									setGender(value as GenderType)
+								}
+							>
+								{Object.entries(GENDER_LABELS).map(
+									([key, label]) => (
+										<Picker.Item
+											key={key}
+											label={label}
+											value={key}
+										/>
+									)
+								)}
+							</Picker>
+						</View>
+
+						<Text style={styles.label}>Documento</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Documento"
+							value={documentId}
+							onChangeText={setDocumentId}
+							placeholderTextColor={colors.textSecondary}
+						/>
+
+						<Text style={styles.label}>Telefone</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Telefone"
+							value={phone}
+							onChangeText={setPhone}
+							placeholderTextColor={colors.textSecondary}
+						/>
+
+						<Text style={styles.label}>Endereço</Text>
+						<TextInput
+							style={styles.input}
+							placeholder="Endereço"
+							value={address}
+							onChangeText={setAddress}
+							placeholderTextColor={colors.textSecondary}
+						/>
+
+						<Text style={styles.label}>Observações</Text>
+						<TextInput
+							style={[
+								styles.input,
+								{ height: 90, textAlignVertical: "top" },
+							]}
+							placeholder="Observações"
+							value={notes}
+							onChangeText={setNotes}
+							placeholderTextColor={colors.textSecondary}
+							multiline
+						/>
 					</View>
-					<Text style={styles.label}>Documento</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Documento"
-						value={documentId}
-						onChangeText={setDocumentId}
-						placeholderTextColor={colors.textSecondary}
-					/>
-					<Text style={styles.label}>Telefone</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Telefone"
-						value={phone}
-						onChangeText={setPhone}
-						placeholderTextColor={colors.textSecondary}
-					/>
-					<Text style={styles.label}>Endereço</Text>
-					<TextInput
-						style={styles.input}
-						placeholder="Endereço"
-						value={address}
-						onChangeText={setAddress}
-						placeholderTextColor={colors.textSecondary}
-					/>
-					<Text style={styles.label}>Observações</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 90, textAlignVertical: "top" },
-						]}
-						placeholder="Observações"
-						value={notes}
-						onChangeText={setNotes}
-						placeholderTextColor={colors.textSecondary}
-						multiline
-					/>
-				</View>
 
-				<ButtonPrimary
-					onPress={handleSave}
-					loading={saving}
-					title={saving ? "Salvando..." : "Salvar"}
-				/>
+					<ButtonPrimary
+						onPress={handleSave}
+						loading={saving}
+						title={saving ? "Salvando..." : "Salvar"}
+					/>
 
-				<ButtonPrimary
-					title="Excluir"
-					onPress={handleDelete}
-					style={{ backgroundColor: colors.danger, marginTop: 20 }}
-				/>
-			</ScrollView>
+					{id && (
+						<ButtonPrimary
+							title="Excluir"
+							onPress={handleDelete}
+							style={{
+								backgroundColor: colors.danger,
+								marginTop: 20,
+							}}
+						/>
+					)}
+				</KeyboardAwareScrollView>
+			</TouchableWithoutFeedback>
 		</SafeAreaView>
 	);
 }
@@ -320,22 +323,19 @@ export default function PatientForm() {
 const styles = StyleSheet.create({
 	safeArea: { flex: 1, backgroundColor: colors.background },
 	container: {
-		padding: 20,
 		alignItems: "center",
+		paddingBottom: 30,
+		flexGrow: 1,
+		paddingHorizontal: 20,
 	},
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
-	loadingText: {
-		marginTop: 10,
-		color: colors.textSecondary,
-		fontSize: 14,
-	},
+	loadingText: { marginTop: 10, color: colors.textSecondary, fontSize: 14 },
 	formCard: {
 		width: "100%",
 		backgroundColor: colors.cardBackground,
 		borderRadius: 16,
 		padding: 20,
 		marginTop: 10,
-		marginBottom: 20,
 		shadowColor: colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
@@ -352,23 +352,6 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		color: colors.textPrimary,
 		fontSize: 15,
-	},
-	saveButton: {
-		backgroundColor: colors.primary,
-		paddingVertical: 15,
-		paddingHorizontal: 40,
-		borderRadius: 12,
-		shadowColor: colors.shadow,
-		shadowOffset: { width: 0, height: 3 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 3,
-	},
-	saveButtonText: {
-		color: colors.white,
-		fontWeight: "600",
-		fontSize: 16,
-		textAlign: "center",
 	},
 	pickerContainer: {
 		width: "100%",

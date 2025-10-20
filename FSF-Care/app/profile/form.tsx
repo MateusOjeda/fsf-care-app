@@ -1,5 +1,14 @@
 import React, { useContext, useState } from "react";
-import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
+import {
+	Platform,
+	View,
+	Text,
+	TextInput,
+	StyleSheet,
+	Alert,
+	Keyboard,
+	TouchableWithoutFeedback,
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
@@ -19,6 +28,7 @@ import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import DateInput from "@/src/components/DateInput";
 import { GENDER_LABELS } from "@/src/data/labels";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function ProfileScreen() {
 	const { user, login } = useContext(AuthContext);
@@ -28,7 +38,6 @@ export default function ProfileScreen() {
 	const [birthDate, setBirthDate] = useState<Date | null>(
 		user?.profile?.birthDate || null
 	);
-
 	const [documentIdType, setDocumentIdType] = useState<UserProfileIdType>(
 		user?.profile?.documentIdType || "RG"
 	);
@@ -60,10 +69,9 @@ export default function ProfileScreen() {
 
 	// Salvar perfil
 	const handleSave = async () => {
-		console.log(user);
 		if (!user) return;
-
 		setLoading(true);
+
 		try {
 			let photoURL = user.photoURL;
 			let photoThumbnailURL = user.photoThumbnailURL;
@@ -123,97 +131,111 @@ export default function ProfileScreen() {
 				onPress={() => router.replace(`/admin/profile`)}
 			/>
 
-			<View style={{ padding: 20, paddingBottom: 40 }}>
-				{/* Avatar */}
-				<View style={{ alignItems: "center", marginBottom: 20 }}>
-					<Avatar
-						photoURL={photoURI}
-						size={200}
-						editable
-						onPress={handlePickImage}
-					/>
-				</View>
-
-				{/* Nome */}
-				<Text style={styles.label}>Nome</Text>
-				<TextInput
-					style={styles.input}
-					placeholder="Nome"
-					value={name}
-					onChangeText={setName}
-				/>
-
-				{/* Data de nascimento */}
-				<Text style={styles.label}>Data de nascimento</Text>
-				<DateInput
-					value={birthDate}
-					onChange={setBirthDate}
-					placeholder="Data de nascimento"
-					formatString="dd/MM/yyyy"
-					maximumDate={new Date()}
-				/>
-
-				{/* Gênero */}
-				<Text style={styles.label}>Gênero</Text>
-				<View style={styles.pickerContainer}>
-					<Picker
-						selectedValue={user?.profile?.gender || gender}
-						onValueChange={(value) =>
-							setGender(value as GenderType)
-						}
-						itemStyle={styles.input}
-					>
-						{Object.entries(GENDER_LABELS).map(([key, label]) => (
-							<Picker.Item key={key} label={label} value={key} />
-						))}
-					</Picker>
-				</View>
-
-				{/* Tipo de documento */}
-				<Text style={styles.label}>Tipo de documento</Text>
-				<View style={styles.pickerContainer}>
-					<Picker
-						selectedValue={documentIdType}
-						onValueChange={(value) =>
-							setDocumentIdType(value as UserProfileIdType)
-						}
-						itemStyle={styles.input}
-					>
-						<Picker.Item label="RG" value="RG" />
-						<Picker.Item label="CPF" value="CPF" />
-						<Picker.Item label="Outro" value="Outro" />
-					</Picker>
-				</View>
-
-				{/* Número do documento */}
-				<Text style={styles.label}>Número do documento</Text>
-				<TextInput
-					style={styles.input}
-					placeholder="Número do documento"
-					value={documentId}
-					onChangeText={setDocumentId}
-				/>
-
-				{/* CRM, se médico */}
-				{user?.role === "medico" && (
-					<>
-						<Text style={styles.label}>CRM</Text>
-						<TextInput
-							style={styles.input}
-							placeholder="CRM"
-							value={crm}
-							onChangeText={setCrm}
+			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+				<KeyboardAwareScrollView
+					contentContainerStyle={{
+						flexGrow: 1,
+						paddingHorizontal: 20,
+					}}
+					enableOnAndroid={true}
+					keyboardShouldPersistTaps="handled"
+					extraScrollHeight={Platform.OS === "ios" ? 20 : 0} // ajusta o empurrão do teclado
+				>
+					{/* Avatar */}
+					<View style={{ alignItems: "center" }}>
+						<Avatar
+							photoURL={photoURI}
+							size={200}
+							editable
+							onPress={handlePickImage}
 						/>
-					</>
-				)}
+					</View>
 
-				<ButtonPrimary
-					onPress={handleSave}
-					loading={loading}
-					title="Salvar"
-					style={{ marginTop: 30 }}
-				/>
-			</View>
+					{/* Nome */}
+					<Text style={styles.label}>Nome</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="Nome"
+						value={name}
+						onChangeText={setName}
+					/>
+
+					{/* Data de nascimento */}
+					<Text style={styles.label}>Data de nascimento</Text>
+					<DateInput
+						value={birthDate}
+						onChange={setBirthDate}
+						placeholder="Data de nascimento"
+						formatString="dd/MM/yyyy"
+						maximumDate={new Date()}
+					/>
+
+					{/* Gênero */}
+					<Text style={styles.label}>Gênero</Text>
+					<View style={styles.pickerContainer}>
+						<Picker
+							selectedValue={gender}
+							onValueChange={(value) =>
+								setGender(value as GenderType)
+							}
+						>
+							{Object.entries(GENDER_LABELS).map(
+								([key, label]) => (
+									<Picker.Item
+										key={key}
+										label={label}
+										value={key}
+									/>
+								)
+							)}
+						</Picker>
+					</View>
+
+					{/* Tipo de documento */}
+					<Text style={styles.label}>Tipo de documento</Text>
+					<View style={styles.pickerContainer}>
+						<Picker
+							selectedValue={documentIdType}
+							onValueChange={(value) =>
+								setDocumentIdType(value as UserProfileIdType)
+							}
+						>
+							<Picker.Item label="RG" value="RG" />
+							<Picker.Item label="CPF" value="CPF" />
+							<Picker.Item label="Outro" value="Outro" />
+						</Picker>
+					</View>
+
+					{/* Número do documento */}
+					<Text style={styles.label}>Número do documento</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="Número do documento"
+						value={documentId}
+						onChangeText={setDocumentId}
+					/>
+
+					{/* CRM */}
+					{user?.role === "medico" && (
+						<>
+							<Text style={styles.label}>CRM</Text>
+							<TextInput
+								style={styles.input}
+								placeholder="CRM"
+								value={crm}
+								onChangeText={setCrm}
+							/>
+						</>
+					)}
+
+					<ButtonPrimary
+						onPress={handleSave}
+						loading={loading}
+						title="Salvar"
+						style={{ marginTop: 30 }}
+					/>
+				</KeyboardAwareScrollView>
+			</TouchableWithoutFeedback>
 		</SafeAreaView>
 	);
 }
@@ -239,23 +261,5 @@ const styles = StyleSheet.create({
 		borderColor: colors.border,
 		borderRadius: 10,
 		backgroundColor: colors.white,
-	},
-	saveButton: {
-		backgroundColor: colors.primary,
-		paddingVertical: 14,
-		borderRadius: 10,
-		alignItems: "center",
-		marginTop: 20,
-	},
-	saveButtonText: {
-		color: colors.white,
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	changePhotoText: {
-		textAlign: "center",
-		color: colors.primary,
-		marginTop: 6,
-		fontWeight: "500",
 	},
 });

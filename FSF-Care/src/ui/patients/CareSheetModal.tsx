@@ -6,8 +6,10 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	TextInput,
-	ScrollView,
 	Alert,
+	Keyboard,
+	TouchableWithoutFeedback,
+	Platform,
 } from "react-native";
 import DateInput from "@/src/components/DateInput";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
@@ -17,6 +19,7 @@ import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import { saveCareSheet } from "@/src/firebase/careSheetService";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 type CareSheetModalProps = {
 	visible: boolean;
@@ -52,7 +55,7 @@ export default function CareSheetModal({
 	};
 
 	const handleCancel = ({ confirmBeforeCancel = true } = {}) => {
-		const handle = () => {
+		const reset = () => {
 			setStarted(false);
 			setCurrentIndex(0);
 			setAnswers({});
@@ -61,19 +64,16 @@ export default function CareSheetModal({
 		};
 
 		if (confirmBeforeCancel) {
-			Alert.alert("Tem certeza?", " Todas as respostas serão apagadas.", [
-				{
-					text: "Não",
-					style: "cancel",
-				},
+			Alert.alert("Tem certeza?", "Todas as respostas serão apagadas.", [
+				{ text: "Não", style: "cancel" },
 				{
 					text: "Sim, cancelar",
 					style: "destructive",
-					onPress: handle,
+					onPress: reset,
 				},
 			]);
 		} else {
-			handle();
+			reset();
 		}
 	};
 
@@ -84,8 +84,10 @@ export default function CareSheetModal({
 			await saveCareSheet(patient, answers, version);
 			handleCancel({ confirmBeforeCancel: false });
 		} catch (error) {
-			console.error("Erro ao salvar CareSheet:", error);
-			alert("Não foi possível salvar a ficha. Tente novamente.");
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar a ficha. Tente novamente."
+			);
 		} finally {
 			setSaving(false);
 		}
@@ -122,7 +124,7 @@ export default function CareSheetModal({
 			case "checkbox":
 				if (!currentQuestion.opcoes) return null;
 
-				const selected: string[] =
+				const selectedValues =
 					currentQuestion.tipo === "checkbox"
 						? answers[questionKeys[currentIndex]] || []
 						: [];
@@ -131,7 +133,7 @@ export default function CareSheetModal({
 					const isSelected =
 						currentQuestion.tipo === "multipla_escolha"
 							? answers[questionKeys[currentIndex]] === opt.pt
-							: selected.includes(opt.pt);
+							: selectedValues.includes(opt.pt);
 
 					return (
 						<TouchableOpacity
@@ -148,40 +150,33 @@ export default function CareSheetModal({
 								} else {
 									if (isSelected) {
 										handleAnswerChange(
-											selected.filter((s) => s !== opt.pt)
+											selectedValues.filter(
+												(s) => s !== opt.pt
+											)
 										);
 									} else {
 										handleAnswerChange([
-											...selected,
+											...selectedValues,
 											opt.pt,
 										]);
 									}
 								}
 							}}
 						>
-							{currentQuestion.tipo === "multipla_escolha" ? (
-								<Ionicons
-									name={
-										isSelected
+							<Ionicons
+								name={
+									currentQuestion.tipo === "multipla_escolha"
+										? isSelected
 											? "radio-button-on"
 											: "radio-button-off"
-									}
-									size={24}
-									color={isSelected ? colors.white : "#aaa"}
-									style={{ marginRight: 10 }}
-								/>
-							) : (
-								<Ionicons
-									name={
-										isSelected
-											? "checkbox"
-											: "square-outline"
-									}
-									size={24}
-									color={isSelected ? colors.white : "#aaa"}
-									style={{ marginRight: 10 }}
-								/>
-							)}
+										: isSelected
+										? "checkbox"
+										: "square-outline"
+								}
+								size={24}
+								color={isSelected ? colors.white : "#aaa"}
+								style={{ marginRight: 10 }}
+							/>
 							<Text
 								style={[
 									styles.optionText,
@@ -196,7 +191,6 @@ export default function CareSheetModal({
 
 			case "grupo":
 				if (!currentQuestion.opcoes) return null;
-
 				const groupValues = answers[questionKeys[currentIndex]] || {};
 				return currentQuestion.opcoes.map((opt: Option) => (
 					<TextInput
@@ -220,77 +214,79 @@ export default function CareSheetModal({
 
 	return (
 		<Modal visible={visible} animationType="slide">
-			<SafeAreaView style={{ flex: 1 }}>
-				<View style={styles.container}>
-					{!started ? (
-						<View style={styles.center}>
-							<Text style={styles.title}>Ficha de Cuidados</Text>
-							<ButtonPrimary
-								title="Iniciar"
-								onPress={() => setStarted(true)}
-								style={{ marginBottom: 10 }}
-							/>
-							<ButtonPrimary
-								title="Fechar"
-								onPress={onClose}
-								style={{ backgroundColor: colors.danger }}
-							/>
-						</View>
-					) : (
-						<>
-							<ScrollView
+			<SafeAreaView style={styles.container}>
+				{!started ? (
+					<View style={styles.center}>
+						<Text style={styles.title}>Ficha de Cuidados</Text>
+						<ButtonPrimary
+							title="Iniciar"
+							onPress={() => setStarted(true)}
+							style={{ marginBottom: 10 }}
+						/>
+						<ButtonPrimary
+							title="Fechar"
+							onPress={onClose}
+							style={{ backgroundColor: colors.danger }}
+						/>
+					</View>
+				) : (
+					<>
+						<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+							<KeyboardAwareScrollView
 								contentContainerStyle={styles.scroll}
+								enableOnAndroid={true}
 								keyboardShouldPersistTaps="handled"
+								extraScrollHeight={
+									Platform.OS === "ios" ? 40 : 0
+								}
+								showsVerticalScrollIndicator={false}
 							>
 								<Text style={styles.question}>
 									{currentQuestion.pergunta_pt}
 								</Text>
 
 								{renderQuestionInput()}
-							</ScrollView>
+							</KeyboardAwareScrollView>
+						</TouchableWithoutFeedback>
 
-							{/* Botões fixos no rodapé */}
-							<View style={styles.footer}>
+						<View style={styles.footer}>
+							<ButtonPrimary
+								title="Cancelar"
+								onPress={() => handleCancel()}
+								style={{
+									backgroundColor: colors.danger,
+									flex: 1,
+								}}
+							/>
+
+							<ButtonPrimary
+								title="Anterior"
+								onPress={handlePrev}
+								style={{
+									backgroundColor: colors.cardBackground,
+									flex: 1,
+								}}
+								textStyle={{ color: colors.textPrimary }}
+								disabled={currentIndex === 0}
+							/>
+
+							{currentIndex + 1 < questionKeys.length ? (
 								<ButtonPrimary
-									title="Cancelar"
-									onPress={() => handleCancel()}
-									style={{
-										backgroundColor: colors.danger,
-										flex: 1,
-									}}
+									title="Próximo"
+									onPress={handleNext}
+									style={{ flex: 1 }}
 								/>
-
+							) : (
 								<ButtonPrimary
-									title="Anterior"
-									onPress={handlePrev}
-									style={{
-										backgroundColor: colors.cardBackground,
-										flex: 1,
-									}}
-									textStyle={{ color: colors.textPrimary }}
-									disabled={currentIndex === 0}
+									title={saving ? "Salvando..." : "Salvar"}
+									onPress={handleSave}
+									loading={saving}
+									style={{ flex: 1 }}
 								/>
-
-								{currentIndex + 1 < questionKeys.length ? (
-									<ButtonPrimary
-										title="Próximo"
-										onPress={handleNext}
-										style={{ flex: 1 }}
-									/>
-								) : (
-									<ButtonPrimary
-										title={
-											saving ? "Salvando..." : "Salvar"
-										}
-										onPress={handleSave}
-										loading={saving}
-										style={{ flex: 1 }}
-									/>
-								)}
-							</View>
-						</>
-					)}
-				</View>
+							)}
+						</View>
+					</>
+				)}
 			</SafeAreaView>
 		</Modal>
 	);
@@ -315,7 +311,7 @@ const styles = StyleSheet.create({
 		marginBottom: 20,
 	},
 	scroll: {
-		paddingBottom: 120, // deixa espaço para os botões
+		paddingBottom: 120,
 	},
 	question: {
 		fontSize: 18,
@@ -340,6 +336,7 @@ const styles = StyleSheet.create({
 		marginBottom: 10,
 		backgroundColor: colors.white,
 		flexDirection: "row",
+		alignItems: "center",
 	},
 	optionSelected: {
 		backgroundColor: colors.primary,

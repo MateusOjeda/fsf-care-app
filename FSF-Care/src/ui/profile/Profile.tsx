@@ -19,7 +19,7 @@ export default function ProfileComponent() {
 	return (
 		<ScrollView
 			style={styles.container}
-			contentContainerStyle={{ paddingBottom: 40 }}
+			contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
 		>
 			{/* Foto de perfil */}
 			<View style={styles.photoContainer}>
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		borderRadius: 12,
 		padding: 16,
-		marginBottom: 30,
 		borderWidth: 1,
 		borderColor: colors.border,
 	},

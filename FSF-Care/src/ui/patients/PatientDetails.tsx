@@ -17,6 +17,7 @@ import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import CareSheetModal from "@/src/ui/patients/CareSheetModal";
 import { GENDER_LABELS } from "@/src/data/labels";
+import { Ionicons } from "@expo/vector-icons";
 
 const mockAppointments = [
 	{
@@ -87,8 +88,8 @@ export default function PatientDetails() {
 				{/* Cabeçalho */}
 				<View style={styles.header}>
 					<Avatar
-						photoURL={patient.photoThumbnailURL}
-						size={120}
+						photoURL={patient.photoURL}
+						size={160}
 						showFullSize={true}
 					/>
 					<Text style={styles.name}>{patient.name}</Text>
@@ -164,7 +165,13 @@ export default function PatientDetails() {
 						title="Editar"
 						onPress={handleEdit}
 						style={{ marginTop: 10 }}
-					/>
+					>
+						<Ionicons
+							name="pencil-outline"
+							size={20}
+							color={colors.white}
+						/>
+					</ButtonPrimary>
 				</View>
 
 				{/* CARD: Fichas de Cuidados */}
@@ -212,7 +219,13 @@ export default function PatientDetails() {
 						title="Nova Ficha de Cuidados"
 						onPress={() => setCareSheetVisible(true)}
 						style={{ marginTop: 10 }}
-					/>
+					>
+						<Ionicons
+							name="clipboard-outline"
+							size={24}
+							color="#fff"
+						/>
+					</ButtonPrimary>
 				</View>
 
 				{/* CARD: Atendimentos */}
@@ -241,7 +254,13 @@ export default function PatientDetails() {
 						title="Novo Atendimento"
 						onPress={() => console.log("Novo atendimento")}
 						style={{ marginTop: 10 }}
-					/>
+					>
+						<Ionicons
+							name="document-text-outline"
+							size={24}
+							color="#fff"
+						/>
+					</ButtonPrimary>
 				</View>
 
 				{/* Modal de ficha */}
