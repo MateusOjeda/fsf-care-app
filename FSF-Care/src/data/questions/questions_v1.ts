@@ -149,7 +149,7 @@ export const QUESTIONS_V1: Record<string, Question> = {
 	"15": {
 		pergunta_pt: "A criança segue alguma dieta especial?",
 		pergunta_en: "Does the child follow a special diet?",
-		tipo: "multipla_escolha",
+		tipo: "checkbox",
 		opcoes: [
 			{ pt: "Não", en: "No" },
 			{ pt: "Vegetariana", en: "Vegetarian" },

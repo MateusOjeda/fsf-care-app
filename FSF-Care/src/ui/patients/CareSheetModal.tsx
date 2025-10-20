@@ -16,6 +16,7 @@ import { Patient, CareSheetAnswers, Option } from "@/src/types";
 import { getQuestionsByVersion, QuestionVersion } from "@/src/data/questions";
 import { saveCareSheet } from "@/src/firebase/careSheetService";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 type CareSheetModalProps = {
 	visible: boolean;
@@ -128,10 +129,9 @@ export default function CareSheetModal({
 
 				return currentQuestion.opcoes.map((opt: Option) => {
 					const isSelected =
-						(currentQuestion.tipo === "multipla_escolha" &&
-							answers[questionKeys[currentIndex]] === opt.pt) ||
-						(currentQuestion.tipo === "checkbox" &&
-							selected.includes(opt.pt));
+						currentQuestion.tipo === "multipla_escolha"
+							? answers[questionKeys[currentIndex]] === opt.pt
+							: selected.includes(opt.pt);
 
 					return (
 						<TouchableOpacity
@@ -146,7 +146,7 @@ export default function CareSheetModal({
 								) {
 									handleAnswerChange(opt.pt);
 								} else {
-									if (selected.includes(opt.pt)) {
+									if (isSelected) {
 										handleAnswerChange(
 											selected.filter((s) => s !== opt.pt)
 										);
@@ -159,6 +159,29 @@ export default function CareSheetModal({
 								}
 							}}
 						>
+							{currentQuestion.tipo === "multipla_escolha" ? (
+								<Ionicons
+									name={
+										isSelected
+											? "radio-button-on"
+											: "radio-button-off"
+									}
+									size={24}
+									color={isSelected ? colors.white : "#aaa"}
+									style={{ marginRight: 10 }}
+								/>
+							) : (
+								<Ionicons
+									name={
+										isSelected
+											? "checkbox"
+											: "square-outline"
+									}
+									size={24}
+									color={isSelected ? colors.white : "#aaa"}
+									style={{ marginRight: 10 }}
+								/>
+							)}
 							<Text
 								style={[
 									styles.optionText,
@@ -316,6 +339,7 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		marginBottom: 10,
 		backgroundColor: colors.white,
+		flexDirection: "row",
 	},
 	optionSelected: {
 		backgroundColor: colors.primary,

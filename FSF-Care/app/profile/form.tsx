@@ -1,12 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-	ScrollView,
-	View,
-	Text,
-	TextInput,
-	StyleSheet,
-	Alert,
-} from "react-native";
+import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { AuthContext } from "@/src/context/AuthContext";
@@ -130,9 +123,7 @@ export default function ProfileScreen() {
 				onPress={() => router.replace(`/admin/profile`)}
 			/>
 
-			<ScrollView
-				contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
-			>
+			<View style={{ padding: 20, paddingBottom: 40 }}>
 				{/* Avatar */}
 				<View style={{ alignItems: "center", marginBottom: 20 }}>
 					<Avatar
@@ -222,7 +213,7 @@ export default function ProfileScreen() {
 					title="Salvar"
 					style={{ marginTop: 30 }}
 				/>
-			</ScrollView>
+			</View>
 		</SafeAreaView>
 	);
 }

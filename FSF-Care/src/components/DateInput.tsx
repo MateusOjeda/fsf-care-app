@@ -31,7 +31,7 @@ export default function DateInput({
 	style,
 	textStyle,
 	maximumDate,
-	minimumDate,
+	minimumDate = new Date(1900, 0, 1),
 	mode = "date",
 	editable = true,
 	formatString = "dd/MM/yyyy",
