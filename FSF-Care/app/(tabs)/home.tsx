@@ -1,6 +1,4 @@
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
 	View,
 	Text,
@@ -9,59 +7,59 @@ import {
 	TouchableOpacity,
 	FlatList,
 	Linking,
+	ActivityIndicator,
 } from "react-native";
+import {
+	SafeAreaView,
+	useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { AuthContext } from "@/src/context/AuthContext";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
 import colors from "@/src/theme/colors";
-import { useFocusSearch } from "@/src/context/FocusSearchContext";
+import { AuthContext } from "@/src/context/AuthContext";
+import { fetchAttendances } from "@/src/firebase/attendanceService";
+import { DocumentWithId } from "@/src/firebase/_firebaseSafe";
+import { Attendance } from "@/src/types";
+import AttendancesRow from "@/src/components/AttendancesRow";
+import { limit } from "firebase/firestore";
 
 export default function HomeScreen() {
 	const { user } = useContext(AuthContext);
-	const { setShouldFocusSearch } = useFocusSearch();
 	const router = useRouter();
-
 	const insets = useSafeAreaInsets();
 
-	const recentAppointments = [
-		{
-			id: "1",
-			name: "João Silva",
-			desc: "Atendimento geral",
-			date: "Hoje",
-			avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-		},
-		{
-			id: "2",
-			name: "Ana Pereira",
-			desc: "Retorno",
-			date: "Ontem",
-			avatar: "https://randomuser.me/api/portraits/women/47.jpg",
-		},
-		{
-			id: "3",
-			name: "Carlos Souza",
-			desc: "Primeira triagem",
-			date: "20/10",
-			avatar: "https://randomuser.me/api/portraits/men/33.jpg",
-		},
-	];
+	const [recentAppointments, setRecentAppointments] = useState<
+		DocumentWithId<Attendance>[]
+	>([]);
+	const [loading, setLoading] = useState(true);
 
-	const today = format(new Date(), "dd 'de' MMMM 'de' yyyy", {
+	const fetchRecentAppointments = async () => {
+		setLoading(true);
+		try {
+			const data = await fetchAttendances([limit(5)]);
+			setRecentAppointments(data);
+		} catch (err) {
+			console.error("Erro ao buscar atendimentos recentes:", err);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchRecentAppointments();
+	}, []);
+
+	const todayText = format(new Date(), "dd 'de' MMMM 'de' yyyy", {
 		locale: ptBR,
 	});
 
 	return (
-		<SafeAreaView
-			style={{
-				flex: 1,
-				paddingBottom: -insets.bottom,
-			}}
-		>
+		<SafeAreaView style={{ flex: 1, paddingBottom: -insets.bottom }}>
 			<View style={styles.container}>
-				{/* Saudação */}
+				{/* Cabeçalho */}
 				<View style={styles.header}>
 					<View>
 						<Text style={styles.greeting}>
@@ -69,10 +67,10 @@ export default function HomeScreen() {
 							{user?.profile?.name?.split(" ")[0] ||
 								"voluntário(a)"}
 						</Text>
-						<Text style={styles.date}>Hoje é {today}</Text>
+						<Text style={styles.date}>Hoje é {todayText}</Text>
 					</View>
 					<Ionicons
-						name="logo-instagram" // ou "logo-facebook", "logo-twitter"
+						name="logo-instagram"
 						size={26}
 						color={colors.primary}
 						onPress={() =>
@@ -80,11 +78,10 @@ export default function HomeScreen() {
 								"https://www.instagram.com/fraternidadesemfronteiras"
 							)
 						}
-						style={{ marginLeft: 10 }}
 					/>
 				</View>
 
-				{/* Imagem de topo com link */}
+				{/* Imagem topo com link */}
 				<TouchableOpacity
 					style={styles.topImageContainer}
 					onPress={() =>
@@ -101,20 +98,17 @@ export default function HomeScreen() {
 					/>
 				</TouchableOpacity>
 
-				{/* Ações principais (grid 2x2) */}
+				{/* Grid de ações */}
 				<View style={styles.actionGrid}>
 					<ActionButton
 						icon="search-outline"
 						label="Encontrar paciente"
-						onPress={() => {
-							setShouldFocusSearch(true);
+						onPress={() =>
 							router.push({
 								pathname: "/patients",
-								params: {
-									initialFilter: "all",
-								},
-							});
-						}}
+								params: { initialFilter: "all" },
+							})
+						}
 					/>
 					<ActionButton
 						icon="people-outline"
@@ -138,25 +132,25 @@ export default function HomeScreen() {
 					/>
 				</View>
 
-				{/* Lista de atendimentos recentes */}
+				{/* Atendimentos recentes */}
 				<Text style={styles.sectionTitle}>Atendimentos recentes</Text>
-				<FlatList
-					data={recentAppointments}
-					keyExtractor={(item) => item.id}
-					renderItem={({ item }) => (
-						<View style={styles.listItem}>
-							<Image
-								source={{ uri: item.avatar }}
-								style={styles.listAvatar}
-							/>
-							<View style={{ flex: 1 }}>
-								<Text style={styles.listName}>{item.name}</Text>
-								<Text style={styles.listDesc}>{item.desc}</Text>
-							</View>
-							<Text style={styles.listDate}>{item.date}</Text>
-						</View>
-					)}
-				/>
+
+				{loading ? (
+					<View style={styles.center}>
+						<ActivityIndicator
+							size="large"
+							color={colors.primary}
+						/>
+					</View>
+				) : (
+					<FlatList
+						data={recentAppointments}
+						keyExtractor={(item) => item.id!}
+						renderItem={({ item }) => (
+							<AttendancesRow item={item} router={router} />
+						)}
+					/>
+				)}
 			</View>
 		</SafeAreaView>
 	);
@@ -188,18 +182,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginBottom: 18,
 	},
-	greeting: {
-		fontSize: 22,
-		fontWeight: "600",
-		color: colors.textPrimary,
-	},
-	date: {
-		fontSize: 14,
-		color: colors.textSecondary,
-		marginTop: 4,
-	},
-
-	/* imagem de topo */
+	greeting: { fontSize: 22, fontWeight: "600", color: colors.textPrimary },
+	date: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
 	topImageContainer: {
 		width: "100%",
 		height: 180,
@@ -207,12 +191,7 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		overflow: "hidden",
 	},
-	topImage: {
-		width: "100%",
-		height: "100%",
-	},
-
-	/* grid de ações */
+	topImage: { width: "100%", height: "100%" },
 	actionGrid: {
 		flexDirection: "row",
 		flexWrap: "wrap",
@@ -235,41 +214,11 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 		fontWeight: "500",
 	},
-
-	/* lista */
 	sectionTitle: {
 		fontSize: 17,
 		fontWeight: "600",
 		color: colors.textPrimary,
 		marginBottom: 10,
 	},
-	listItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: colors.white,
-		borderRadius: 10,
-		padding: 12,
-		marginBottom: 10,
-		borderWidth: 1,
-		borderColor: colors.border,
-	},
-	listAvatar: {
-		width: 46,
-		height: 46,
-		borderRadius: 23,
-		marginRight: 12,
-	},
-	listName: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: colors.textPrimary,
-	},
-	listDesc: {
-		fontSize: 14,
-		color: colors.textSecondary,
-	},
-	listDate: {
-		fontSize: 13,
-		color: colors.textSecondary,
-	},
+	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

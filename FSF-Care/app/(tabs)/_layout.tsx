@@ -81,7 +81,7 @@ export default function TabsLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				// name="profile"
+				name="profile"
 				options={{
 					title: "Voluntário",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -95,7 +95,6 @@ export default function TabsLayout() {
 							size={size}
 						/>
 					),
-					href: "/form/attendances", // temporário: redireciona para novo atendimento
 				}}
 			/>
 			<Tabs.Screen

@@ -101,5 +101,5 @@ export interface Attendance {
 	treatment?: string; // plano de tratamento
 	prescribedMedications?: string; // remédios receitados
 	notes?: string; // observações adicionais
-	createdAt?: Date; // timestamp do atendimento
+	createdAt: Date; // timestamp do atendimento
 }

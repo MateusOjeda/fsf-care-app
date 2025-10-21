@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
 	View,
 	Text,
 	FlatList,
-	TouchableOpacity,
 	TextInput,
 	ActivityIndicator,
 	StyleSheet,
@@ -15,31 +14,31 @@ import {
 } from "react-native-safe-area-context";
 
 import ButtonPrimary from "@/src/components/ButtonPrimary";
-import Avatar from "@/src/components/Avatar";
 import colors from "@/src/theme/colors";
 import { AuthContext } from "@/src/context/AuthContext";
-import { Attendance, Patient } from "@/src/types";
+import { Attendance } from "@/src/types";
 import { fetchAttendances } from "@/src/firebase/attendanceService";
-import { getPatientById } from "@/src/firebase/patientService";
+import { DocumentWithId } from "@/src/firebase/_firebaseSafe";
+import AttendancesRow from "@/src/components/AttendancesRow";
 
 export default function AttendancesScreen() {
 	const insets = useSafeAreaInsets();
 	const { user } = useContext(AuthContext);
 	const router = useRouter();
 
-	const [attendances, setAttendances] = useState<Attendance[]>([]);
+	const [attendances, setAttendances] = useState<
+		DocumentWithId<Attendance>[]
+	>([]);
+	const [filtered, setFiltered] = useState<DocumentWithId<Attendance>[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState("");
-	const [filtered, setFiltered] = useState<Attendance[]>([]);
 
-	const searchInputRef = useRef<TextInput>(null);
-
-	// Fetch attendances
+	// Buscar atendimentos
 	useEffect(() => {
 		const fetch = async () => {
 			setLoading(true);
 			try {
-				const data = await fetchAttendances(); // retorna array de Attendances
+				const data = await fetchAttendances();
 				setAttendances(data);
 				setFiltered(data);
 			} catch (err) {
@@ -51,18 +50,17 @@ export default function AttendancesScreen() {
 		fetch();
 	}, []);
 
-	// Filtrar por search
+	// Filtrar atendimentos pelo search
 	useEffect(() => {
 		if (!search.trim()) {
 			setFiltered(attendances);
 			return;
 		}
-
 		const lower = search.toLowerCase();
 		const filteredList = attendances.filter(
 			(a) =>
-				a.patientName?.toLowerCase().includes(lower) ||
-				a.diagnostic?.toLowerCase().includes(lower)
+				a.data.diagnostic?.toLowerCase().includes(lower) ||
+				a.data.treatment?.toLowerCase().includes(lower)
 		);
 		setFiltered(filteredList);
 	}, [search, attendances]);
@@ -86,9 +84,8 @@ export default function AttendancesScreen() {
 				<Text style={styles.title}>Atendimentos</Text>
 
 				<TextInput
-					ref={searchInputRef}
 					style={styles.search}
-					placeholder="Buscar por paciente ou diagnóstico..."
+					placeholder="Buscar diagnóstico ou tratamento..."
 					value={search}
 					onChangeText={setSearch}
 					placeholderTextColor={colors.textSecondary}
@@ -98,39 +95,14 @@ export default function AttendancesScreen() {
 					data={filtered}
 					keyExtractor={(item) => item.id!}
 					renderItem={({ item }) => (
-						<TouchableOpacity
-							onPress={() =>
-								router.push(`/attendances/${item.id}`)
-							}
-							activeOpacity={0.7}
-						>
-							<View style={styles.item}>
-								<Avatar
-									photoURL={item.patientPhotoURL}
-									size={60}
-									borderWidth={1}
-									borderColor={colors.border}
-								/>
-								<View style={styles.info}>
-									<Text style={styles.name}>
-										{item.patientName}
-									</Text>
-									<Text style={styles.sub}>
-										{item.diagnostic || "-"} •{" "}
-										{item.treatment || "-"}
-									</Text>
-									<Text style={styles.sub}>
-										{item.prescribedMedications || ""}
-									</Text>
-								</View>
-							</View>
-						</TouchableOpacity>
+						<AttendancesRow item={item} router={router} />
 					)}
 					refreshing={loading}
 					onRefresh={async () => {
 						setLoading(true);
 						const data = await fetchAttendances();
 						setAttendances(data);
+						setFiltered(data);
 						setLoading(false);
 					}}
 				/>
@@ -164,24 +136,6 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		color: colors.textPrimary,
 	},
-	item: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: colors.cardBackground,
-		padding: 12,
-		borderRadius: 12,
-		marginBottom: 10,
-		borderWidth: 1,
-		borderColor: colors.border,
-		shadowColor: "#000",
-		shadowOpacity: 0.05,
-		shadowRadius: 4,
-		shadowOffset: { width: 0, height: 2 },
-		elevation: 2,
-	},
-	info: { marginLeft: 12, flex: 1 },
-	name: { fontWeight: "600", fontSize: 16, color: colors.textPrimary },
-	sub: { color: colors.textSecondary, fontSize: 14 },
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 	loadingText: {
 		marginTop: 12,
