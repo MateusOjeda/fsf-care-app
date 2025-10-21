@@ -190,7 +190,6 @@ export default function PatientsDetailsScreen() {
 const styles = StyleSheet.create({
 	containerScroll: {
 		paddingHorizontal: 16,
-		paddingTop: 20,
 		paddingBottom: 10,
 	},
 	container: {

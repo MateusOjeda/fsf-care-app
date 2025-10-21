@@ -38,9 +38,7 @@ export default function AttendancesList({
 						<TouchableOpacity
 							key={a.id}
 							style={styles.attendanceCard}
-							onPress={() =>
-								router.push(`/form/attendances?id=${a.id}`)
-							}
+							onPress={() => router.push(`/attendances/${a.id}`)}
 						>
 							<Text style={styles.attendanceDate}>
 								{a.data.createdAt!.toLocaleDateString()}
