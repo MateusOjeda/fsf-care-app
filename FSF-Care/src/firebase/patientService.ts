@@ -1,4 +1,3 @@
-// src/firebase/patientService.ts
 import {
 	collection,
 	doc,

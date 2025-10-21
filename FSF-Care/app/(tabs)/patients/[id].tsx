@@ -14,12 +14,12 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { getPatientById } from "@/src/firebase/patientService";
 import { Patient } from "@/src/types";
 import BackHeader from "@/src/components/BackHeader";
-import Avatar from "@/src/components/Avatar";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
+import PatientInfo from "@/src/components/PatientInfo";
 import colors from "@/src/theme/colors";
 import CareSheetModal from "@/src/components/CareSheetModal";
-import { GENDER_LABELS } from "@/src/data/labels";
 import { Ionicons } from "@expo/vector-icons";
+import PatientHeader from "@/src/components/PatientHeader";
 
 const mockAppointments = [
 	{
@@ -91,100 +91,10 @@ export default function PatientsDetailsScreen() {
 				/>
 				<ScrollView contentContainerStyle={styles.containerScroll}>
 					{/* Cabeçalho */}
-					<View style={styles.header}>
-						<Avatar
-							photoURL={patient.photoThumbnailURL}
-							photoFullSizeURL={patient.photoURL}
-							size={160}
-							showFullSize={true}
-						/>
-						<Text style={styles.name}>{patient.name}</Text>
-						<Text style={styles.age}>
-							{patient.birthDate
-								? `${
-										new Date().getFullYear() -
-										new Date(
-											patient.birthDate
-										).getFullYear()
-								  } anos`
-								: "-"}
-						</Text>
-					</View>
+					<PatientHeader patient={patient} />
 
 					{/* Informações básicas */}
-					<View style={styles.sectionCard}>
-						{patient.birthDate && (
-							<>
-								<Text style={styles.infoLabel}>
-									Data de nascimento
-								</Text>
-								<Text style={styles.infoValue}>
-									{patient.birthDate.toLocaleDateString(
-										"pt-BR"
-									)}
-								</Text>
-							</>
-						)}
-
-						{patient.gender && (
-							<>
-								<Text style={styles.infoLabel}>Gênero</Text>
-								<Text style={styles.infoValue}>
-									{GENDER_LABELS[patient.gender]}
-								</Text>
-							</>
-						)}
-
-						{patient.documentId && (
-							<>
-								<Text style={styles.infoLabel}>Documento</Text>
-								<Text style={styles.infoValue}>
-									{patient.documentId}
-								</Text>
-							</>
-						)}
-
-						{patient.phone && (
-							<>
-								<Text style={styles.infoLabel}>Telefone</Text>
-								<Text style={styles.infoValue}>
-									{patient.phone}
-								</Text>
-							</>
-						)}
-
-						{patient.address && (
-							<>
-								<Text style={styles.infoLabel}>Endereço</Text>
-								<Text style={styles.infoValue}>
-									{patient.address}
-								</Text>
-							</>
-						)}
-
-						{patient.notes && (
-							<>
-								<Text style={styles.infoLabel}>
-									Observações
-								</Text>
-								<Text style={styles.infoValue}>
-									{patient.notes}
-								</Text>
-							</>
-						)}
-
-						<ButtonPrimary
-							title="Editar"
-							onPress={handleEdit}
-							style={{ marginTop: 10 }}
-						>
-							<Ionicons
-								name="pencil-outline"
-								size={20}
-								color={colors.white}
-							/>
-						</ButtonPrimary>
-					</View>
+					<PatientInfo patient={patient} handleEdit={handleEdit} />
 
 					{/* CARD: Fichas de Cuidados */}
 					<View style={styles.sectionCard}>
@@ -304,16 +214,7 @@ const styles = StyleSheet.create({
 	},
 	center: { flex: 1, justifyContent: "center", alignItems: "center" },
 	loadingText: { marginTop: 12, fontSize: 16, color: colors.textSecondary },
-	header: { alignItems: "center", marginBottom: 20 },
-	name: {
-		fontSize: 22,
-		fontWeight: "600",
-		color: colors.textPrimary,
-		marginTop: 12,
-	},
-	age: { fontSize: 16, color: colors.textSecondary, marginTop: 4 },
-	infoLabel: { fontSize: 14, color: colors.textSecondary, marginTop: 8 },
-	infoValue: { fontSize: 16, color: colors.textPrimary, marginTop: 2 },
+
 	sectionCard: {
 		backgroundColor: colors.cardBackground,
 		borderRadius: 16,

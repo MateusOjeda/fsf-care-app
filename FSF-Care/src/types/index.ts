@@ -89,3 +89,17 @@ export type CareSheetSummary = {
 	version: string;
 	createdAt: string;
 };
+
+// Atendimento:
+
+export interface Attendance {
+	id?: string;
+	patientId: string; // paciente atendido
+	userId: string; // profissional que realizou o atendimento
+	anamnese?: string; // histórico, queixas, sintomas
+	diagnostic?: string; // diagnóstico realizado
+	treatment?: string; // plano de tratamento
+	prescribedMedications?: string; // remédios receitados
+	notes?: string; // observações adicionais
+	createdAt?: Date; // timestamp do atendimento
+}
