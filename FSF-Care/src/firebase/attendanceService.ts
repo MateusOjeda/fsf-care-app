@@ -1,4 +1,3 @@
-// src/firebase/attendanceService.ts
 import {
 	collection,
 	doc,
@@ -6,6 +5,7 @@ import {
 	QueryConstraint,
 	where,
 	orderBy,
+	query,
 } from "firebase/firestore";
 import { db } from "@/src/firebase/_config";
 import {
@@ -14,6 +14,7 @@ import {
 	updateDocSafe,
 	getDocSafeWithId,
 	fetchDocumentsWithIdSafe,
+	fetchDocumentsWithIdSafeQuery,
 	DocumentWithId,
 } from "@/src/firebase/_firebaseSafe";
 import { Attendance } from "@/src/types";
@@ -120,4 +121,19 @@ export async function getAttendancesByUser(
  */
 export function getAttendanceRef(id: string): DocumentReference<Attendance> {
 	return doc(db, "attendances", id) as DocumentReference<Attendance>;
+}
+
+/**
+ * Busca todos os atendimentos de um paciente
+ */
+export async function fetchAttendancesByPatientId(
+	patientId: string
+): Promise<DocumentWithId<Attendance>[]> {
+	const q = query(
+		collection(db, "attendances"),
+		where("patientId", "==", patientId),
+		orderBy("createdAt", "desc")
+	);
+
+	return await fetchDocumentsWithIdSafeQuery<Attendance>(q);
 }

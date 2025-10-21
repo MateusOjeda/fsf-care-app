@@ -11,6 +11,7 @@ import {
 	getDocs,
 	query,
 	QueryConstraint,
+	Query,
 } from "firebase/firestore";
 import {
 	convertDatesToTimestamps,
@@ -65,6 +66,16 @@ export async function fetchDocumentsWithIdSafe<T>(
 	const q = query(collectionRef, ...constraints);
 	const snapshot = await getDocs(q);
 
+	return snapshot.docs.map((docSnap) => {
+		const data = convertTimestampsToDates(docSnap.data()) as T;
+		return { id: docSnap.id, data };
+	});
+}
+
+export async function fetchDocumentsWithIdSafeQuery<T>(
+	q: Query<DocumentData>
+): Promise<DocumentWithId<T>[]> {
+	const snapshot = await getDocs(q);
 	return snapshot.docs.map((docSnap) => {
 		const data = convertTimestampsToDates(docSnap.data()) as T;
 		return { id: docSnap.id, data };

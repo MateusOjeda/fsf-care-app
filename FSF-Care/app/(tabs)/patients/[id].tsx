@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { getPatientById } from "@/src/firebase/patientService";
-import { Patient } from "@/src/types";
+import { Attendance, Patient } from "@/src/types";
 import BackHeader from "@/src/components/BackHeader";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import PatientInfo from "@/src/components/PatientInfo";
@@ -20,21 +20,9 @@ import colors from "@/src/theme/colors";
 import CareSheetModal from "@/src/components/CareSheetModal";
 import { Ionicons } from "@expo/vector-icons";
 import PatientHeader from "@/src/components/PatientHeader";
-
-const mockAppointments = [
-	{
-		id: "1",
-		date: "2025-01-15",
-		professional: "Dr. João Silva",
-		notes: "Consulta de rotina",
-	},
-	{
-		id: "2",
-		date: "2025-02-20",
-		professional: "Dra. Maria Souza",
-		notes: "Retorno para ajustes",
-	},
-];
+import AttendancesList from "@/src/components/AttendancesList";
+import { fetchAttendancesByPatientId } from "@/src/firebase/attendanceService";
+import { DocumentWithId } from "@/src/firebase/_firebaseSafe";
 
 export default function PatientsDetailsScreen() {
 	const insets = useSafeAreaInsets();
@@ -44,6 +32,30 @@ export default function PatientsDetailsScreen() {
 	const [patient, setPatient] = useState<Patient | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [careSheetVisible, setCareSheetVisible] = useState(false);
+	const [attendances, setAttendances] = useState<
+		DocumentWithId<Attendance>[]
+	>([]);
+	const [loadingAttendances, setLoadingAttendances] = useState(true);
+
+	const fetchPatientAttendances = async () => {
+		if (!patient?.id) return;
+		setLoadingAttendances(true);
+		try {
+			const docs = await fetchAttendancesByPatientId(patient.id);
+			setAttendances(docs);
+		} catch (err) {
+			console.error(err);
+			Alert.alert("Erro", "Não foi possível carregar os atendimentos");
+		} finally {
+			setLoadingAttendances(false);
+		}
+	};
+
+	useEffect(() => {
+		if (patient?.id) {
+			fetchPatientAttendances();
+		}
+	}, [patient]);
 
 	const fetchPatient = async () => {
 		setLoading(true);
@@ -153,41 +165,14 @@ export default function PatientsDetailsScreen() {
 					</View>
 
 					{/* CARD: Atendimentos */}
-					<View style={styles.sectionCard}>
-						<Text style={styles.sectionTitle}>Atendimentos</Text>
-						{mockAppointments && mockAppointments.length > 0 ? (
-							mockAppointments.map((a) => (
-								<View key={a.id} style={styles.appointmentCard}>
-									<Text style={styles.appointmentDate}>
-										{a.date}
-									</Text>
-									<Text
-										style={styles.appointmentProfessional}
-									>
-										{a.professional}
-									</Text>
-									<Text style={styles.appointmentNotes}>
-										{a.notes}
-									</Text>
-								</View>
-							))
-						) : (
-							<Text style={styles.emptyText}>
-								Nenhum atendimento encontrado
-							</Text>
-						)}
-						<ButtonPrimary
-							title="Novo Atendimento"
-							onPress={() => console.log("Novo atendimento")}
-							style={{ marginTop: 10 }}
-						>
-							<Ionicons
-								name="document-text-outline"
-								size={24}
-								color="#fff"
-							/>
-						</ButtonPrimary>
-					</View>
+					<AttendancesList
+						attendances={attendances} // array real vindo do Firestore
+						onNewAttendance={() =>
+							router.push(
+								`/form/attendances?patientId=${patient.id}`
+							)
+						}
+					/>
 
 					{/* Modal de ficha */}
 					<CareSheetModal
