@@ -166,7 +166,7 @@ export default function PatientsDetailsScreen() {
 
 					{/* CARD: Atendimentos */}
 					<AttendancesList
-						attendances={attendances} // array real vindo do Firestore
+						attendances={attendances}
 						onNewAttendance={() =>
 							router.push(
 								`/form/attendances?patientId=${patient.id}`

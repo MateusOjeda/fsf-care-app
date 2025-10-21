@@ -7,15 +7,16 @@ import { Attendance, Patient } from "@/src/types";
 import { getPatientById } from "@/src/firebase/patientService";
 import { format, isToday, isYesterday } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useRouter } from "expo-router";
 
 interface AttendancesRowProps {
 	item: DocumentWithId<Attendance>;
-	router: any;
 }
 
-export default function AttendancesRow({ item, router }: AttendancesRowProps) {
+export default function AttendancesRow({ item }: AttendancesRowProps) {
 	const [patient, setPatient] = useState<Patient | null>(null);
 	const patientCache = useRef<{ [id: string]: Patient }>({});
+	const router = useRouter();
 
 	// Buscar paciente se não estiver no cache
 	useEffect(() => {

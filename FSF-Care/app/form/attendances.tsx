@@ -31,10 +31,16 @@ import PatientInfo from "@/src/components/PatientInfo";
 import PatientHeader from "@/src/components/PatientHeader";
 import BackHeader from "@/src/components/BackHeader";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { fetchPatients, getPatientById } from "@/src/firebase/patientService";
 
 export default function AttendanceForm() {
 	const { user } = useContext(AuthContext);
-	const { id } = useLocalSearchParams<{ id: string }>();
+	const { id, patientId } = useLocalSearchParams<{
+		id: string;
+		patientId: string;
+	}>();
+
+	console.log("Params:", { id, patientId });
 	const router = useRouter();
 
 	// Modal de pacientes
@@ -52,11 +58,6 @@ export default function AttendanceForm() {
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
-		if (!id) {
-			setLoading(false);
-			return;
-		}
-
 		const fetchAttendance = async () => {
 			try {
 				const data = await getAttendanceById(id);
@@ -71,6 +72,14 @@ export default function AttendanceForm() {
 				setTreatment(data.treatment || "");
 				setPrescribedMedications(data.prescribedMedications || "");
 				setNotes(data.notes || "");
+
+				const patientData = await getPatientById(data.patientId);
+				if (patientData) {
+					setSelectedPatient({
+						id: data.patientId,
+						data: patientData,
+					});
+				}
 			} catch (err) {
 				console.error(err);
 				Alert.alert("Erro", "Não foi possível carregar o atendimento");
@@ -79,7 +88,31 @@ export default function AttendanceForm() {
 			}
 		};
 
-		fetchAttendance();
+		const fetchPatients = async () => {
+			try {
+				const patientData = await getPatientById(patientId);
+				if (patientData) {
+					setSelectedPatient({
+						id: patientId,
+						data: patientData,
+					});
+				}
+			} catch (err) {
+				console.error(err);
+				Alert.alert("Erro", "Não foi possível carregar o paciente");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		if (id) {
+			fetchAttendance();
+		} else if (patientId) {
+			fetchPatients();
+		} else {
+			setLoading(false);
+			return;
+		}
 	}, [id]);
 
 	const handleSave = async () => {
@@ -131,9 +164,15 @@ export default function AttendanceForm() {
 		<SafeAreaView style={styles.safeArea}>
 			<BackHeader
 				title={id ? "Editar Atendimento" : "Novo Atendimento"}
-				// onPress={() =>
-				//     router.replace(id ? `/patients/${id}` : `/patients`)
-				// }
+				onPress={() => {
+					if (id) {
+						router.replace(`/attendances/${id}`);
+					} else if (patientId) {
+						router.replace(`/patients/${patientId}`);
+					} else {
+						router.replace(`/attendances`);
+					}
+				}}
 			/>
 
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -144,13 +183,13 @@ export default function AttendanceForm() {
 					extraScrollHeight={Platform.OS === "ios" ? 40 : 0}
 					showsVerticalScrollIndicator={false}
 				>
-					<TouchableOpacity onPress={() => setModalVisible(true)}>
-						{selectedPatient ? (
-							<>
-								<PatientHeader patient={selectedPatient.data} />
-								<PatientInfo patient={selectedPatient.data} />
-							</>
-						) : (
+					{selectedPatient ? (
+						<>
+							<PatientHeader patient={selectedPatient.data} />
+							<PatientInfo patient={selectedPatient.data} />
+						</>
+					) : (
+						<TouchableOpacity onPress={() => setModalVisible(true)}>
 							<View
 								style={{
 									justifyContent: "center",
@@ -172,8 +211,8 @@ export default function AttendanceForm() {
 									Selecionar paciente
 								</Text>
 							</View>
-						)}
-					</TouchableOpacity>
+						</TouchableOpacity>
+					)}
 
 					<Text style={styles.label}>Anamnese</Text>
 					<TextInput

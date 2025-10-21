@@ -94,9 +94,7 @@ export default function AttendancesScreen() {
 				<FlatList
 					data={filtered}
 					keyExtractor={(item) => item.id!}
-					renderItem={({ item }) => (
-						<AttendancesRow item={item} router={router} />
-					)}
+					renderItem={({ item }) => <AttendancesRow item={item} />}
 					refreshing={loading}
 					onRefresh={async () => {
 						setLoading(true);

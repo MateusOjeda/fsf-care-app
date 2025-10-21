@@ -147,7 +147,7 @@ export default function HomeScreen() {
 						data={recentAppointments}
 						keyExtractor={(item) => item.id!}
 						renderItem={({ item }) => (
-							<AttendancesRow item={item} router={router} />
+							<AttendancesRow item={item} />
 						)}
 					/>
 				)}

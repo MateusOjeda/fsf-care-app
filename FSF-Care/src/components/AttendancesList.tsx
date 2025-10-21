@@ -1,9 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import {
+	View,
+	Text,
+	StyleSheet,
+	TouchableOpacity,
+	Keyboard,
+} from "react-native";
 import ButtonPrimary from "@/src/components/ButtonPrimary";
 import colors from "@/src/theme/colors";
 import { Attendance } from "@/src/types";
 import { DocumentWithId } from "@/src/firebase/_firebaseSafe";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 interface AttendancesListProps {
 	attendances: DocumentWithId<Attendance>[];
@@ -14,6 +22,7 @@ export default function AttendancesList({
 	attendances,
 	onNewAttendance,
 }: AttendancesListProps) {
+	const router = useRouter();
 	return (
 		<View style={styles.sectionCard}>
 			<Text style={styles.sectionTitle}>Atendimentos</Text>
@@ -26,7 +35,13 @@ export default function AttendancesList({
 							a.data.createdAt!.getTime()
 					)
 					.map((a) => (
-						<View key={a.id} style={styles.attendanceCard}>
+						<TouchableOpacity
+							key={a.id}
+							style={styles.attendanceCard}
+							onPress={() =>
+								router.push(`/form/attendances?id=${a.id}`)
+							}
+						>
 							<Text style={styles.attendanceDate}>
 								{a.data.createdAt!.toLocaleDateString()}
 							</Text>
@@ -70,7 +85,7 @@ export default function AttendancesList({
 									{a.data.notes}
 								</Text>
 							)}
-						</View>
+						</TouchableOpacity>
 					))
 			) : (
 				<Text style={styles.emptyText}>
@@ -82,7 +97,9 @@ export default function AttendancesList({
 				title="Novo Atendimento"
 				onPress={onNewAttendance}
 				style={{ marginTop: 10 }}
-			/>
+			>
+				<Ionicons name="document-text-outline" size={24} color="#fff" />
+			</ButtonPrimary>
 		</View>
 	);
 }
