@@ -32,6 +32,7 @@ import PatientHeader from "@/src/components/PatientHeader";
 import BackHeader from "@/src/components/BackHeader";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { fetchPatients, getPatientById } from "@/src/firebase/patientService";
+import AutoGrowingTextInput from "@/src/components/AutoGrowingTextInput";
 
 export default function AttendanceForm() {
 	const { user } = useContext(AuthContext);
@@ -215,63 +216,43 @@ export default function AttendanceForm() {
 					)}
 
 					<Text style={styles.label}>Anamnese</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 80, textAlignVertical: "top" },
-						]}
+					<AutoGrowingTextInput
 						placeholder="Histórico, queixas, sintomas..."
 						value={anamnese}
 						onChangeText={setAnamnese}
-						multiline
+						minHeight={80}
 					/>
 
 					<Text style={styles.label}>Diagnóstico</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 60, textAlignVertical: "top" },
-						]}
+					<AutoGrowingTextInput
 						placeholder="Diagnóstico realizado"
 						value={diagnostic}
 						onChangeText={setDiagnostic}
-						multiline
+						minHeight={60}
 					/>
 
 					<Text style={styles.label}>Tratamento</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 60, textAlignVertical: "top" },
-						]}
+					<AutoGrowingTextInput
 						placeholder="Plano de tratamento"
 						value={treatment}
 						onChangeText={setTreatment}
-						multiline
+						minHeight={60}
 					/>
 
 					<Text style={styles.label}>Remédios receitados</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 60, textAlignVertical: "top" },
-						]}
+					<AutoGrowingTextInput
 						placeholder="Medicamentos prescritos"
 						value={prescribedMedications}
 						onChangeText={setPrescribedMedications}
-						multiline
+						minHeight={60}
 					/>
 
 					<Text style={styles.label}>Observações</Text>
-					<TextInput
-						style={[
-							styles.input,
-							{ height: 60, textAlignVertical: "top" },
-						]}
+					<AutoGrowingTextInput
 						placeholder="Observações adicionais"
 						value={notes}
 						onChangeText={setNotes}
-						multiline
+						minHeight={60}
 					/>
 
 					<ButtonPrimary
