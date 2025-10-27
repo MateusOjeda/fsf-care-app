@@ -2,7 +2,7 @@ import { Slot, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { AuthProvider, AuthContext } from "../src/context/AuthContext";
 import LogRouteExpo from "@/src/utils/LogRouteExpo";
-import { StatusBar } from "react-native";
+import { Platform, StatusBar, View, Text, StyleSheet } from "react-native";
 import { FocusSearchProvider } from "@/src/context/FocusSearchContext";
 
 function RootStack() {
@@ -40,6 +40,16 @@ function RootStack() {
 }
 
 export default function RootLayout() {
+	if (Platform.OS === "ios") {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.text}>
+					Sorry! iOS adjustments are not yet applied.
+				</Text>
+			</View>
+		);
+	}
+
 	return (
 		<AuthProvider>
 			<FocusSearchProvider>
@@ -53,3 +63,16 @@ export default function RootLayout() {
 		</AuthProvider>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		padding: 20,
+	},
+	text: {
+		fontSize: 18,
+		textAlign: "center",
+	},
+});
